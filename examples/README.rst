@@ -1,0 +1,1 @@
+This folder contains examples of use of the Python package wellFARE
