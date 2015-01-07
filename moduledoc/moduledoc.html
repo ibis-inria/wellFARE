@@ -1,0 +1,567 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Python package reference manual &mdash; wellFARE 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  
+
+  
+    <link rel="top" title="wellFARE 0.1.0 documentation" href="../index.html"/>
+        <link rel="prev" title="Command-line interface" href="../cli.html"/> 
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/modernizr/2.6.2/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-nav-search">
+        <a href="../index.html" class="fa fa-home"> wellFARE</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+        
+        
+            <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../cli.html">Command-line interface</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Python package reference manual</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-wellfare.ILM">wellfare.ILM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#wellfare-preprocessing">wellfare.preprocessing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#wellfare-parsing">wellfare.parsing</a></li>
+</ul>
+</li>
+</ul>
+
+        
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../index.html">wellFARE</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../index.html">Docs</a> &raquo;</li>
+      
+    <li>Python package reference manual</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          <a href="../_sources/moduledoc/moduledoc.txt" rel="nofollow"> View page source</a>
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            
+  <div class="section" id="python-package-reference-manual">
+<h1>Python package reference manual<a class="headerlink" href="#python-package-reference-manual" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-wellfare.ILM">
+<span id="wellfare-ilm"></span><h2>wellfare.ILM<a class="headerlink" href="#module-wellfare.ILM" title="Permalink to this headline">¶</a></h2>
+<p>This module regroups all methods and functions for the application
+of Inverse Linear Methods, and estimators to treat reporter data</p>
+<dl class="function">
+<dt id="wellfare.ILM.infer_control">
+<tt class="descclassname">wellfare.ILM.</tt><tt class="descname">infer_control</tt><big>(</big><em>H</em>, <em>y</em>, <em>Nic</em>, <em>alphas=None</em>, <em>eps_L=0.0001</em>, <em>positive_solution=False</em>, <em>variances=None</em><big>)</big><a class="headerlink" href="#wellfare.ILM.infer_control" title="Permalink to this definition">¶</a></dt>
+<dd><p>Infers a control with a smoothness penalty.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>u, y_smoothed, ic, best_alpha, alphas_scores</strong> :</p>
+<blockquote>
+<div><p>A set of variables as described below.</p>
+</div></blockquote>
+<p><strong>u</strong> :</p>
+<blockquote>
+<div><p>A vector representing the infered control.</p>
+</div></blockquote>
+<p><strong>y_smoothed</strong> :</p>
+<blockquote>
+<div><p>The predicted value of the observed data at the same time points
+as the data. y_smoothed will appear smoothed compared to y.</p>
+</div></blockquote>
+<p><strong>ic</strong> :</p>
+<blockquote>
+<div><p>initial conditions and other coefficients which are
+not in u.</p>
+</div></blockquote>
+<p><strong>best_alpha</strong> :</p>
+<blockquote>
+<div><p>alpha chosen as a regularization parameters</p>
+</div></blockquote>
+<p><strong>alphas_scores</strong> :</p>
+<blockquote class="last">
+<div><p>Generalized Cross Validation scores for the different
+alphas.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.ILM.infer_growth_rate">
+<tt class="descclassname">wellfare.ILM.</tt><tt class="descname">infer_growth_rate</tt><big>(</big><em>curve_v</em>, <em>ttu</em>, <em>alphas=None</em>, <em>eps_L=0.0001</em>, <em>positive=False</em><big>)</big><a class="headerlink" href="#wellfare.ILM.infer_growth_rate" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>mu, v_smoothed, ic, alpha, ascores</strong> :</p>
+<blockquote>
+<div><p>As described below.</p>
+</div></blockquote>
+<p><strong>mu</strong> :</p>
+<blockquote>
+<div><p>Vector of inferred mu.</p>
+</div></blockquote>
+<p><strong>v_smoothed</strong> :</p>
+<blockquote>
+<div><p>The predicted value of the observed volume at the same time
+points as the data. v_smoothed will appear smoothed compared to
+the measured volume.</p>
+</div></blockquote>
+<p><strong>model</strong> :</p>
+<blockquote>
+<div><p>instance of sklearn.linear_model.RidgeCV, used for the Ridge
+regularization / cross-validation. Useful to get the value of
+the parameter alpha used etc.</p>
+</div></blockquote>
+<p><strong>alpha,</strong> :</p>
+<p class="last"><strong>ascores</strong> :</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.ILM.infer_synthesis_rate">
+<tt class="descclassname">wellfare.ILM.</tt><tt class="descname">infer_synthesis_rate</tt><big>(</big><em>curve_f</em>, <em>curve_v</em>, <em>ttu</em>, <em>degr</em>, <em>alphas=None</em>, <em>eps_L=0.0001</em>, <em>positive=False</em>, <em>variances=None</em><big>)</big><a class="headerlink" href="#wellfare.ILM.infer_synthesis_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>dF/dt = s(t)V(t) - degr*F</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>curve_f</strong> :</p>
+<blockquote>
+<div><p>A curve instance representing the (noisy) measured
+fluorescence</p>
+</div></blockquote>
+<p><strong>curve_v</strong> :</p>
+<blockquote>
+<div><p>A curve instance representing the (noisy) measured
+volume</p>
+</div></blockquote>
+<p><strong>ttu</strong> :</p>
+<blockquote>
+<div><p>Times at which the control is</p>
+</div></blockquote>
+<p><strong>variances</strong> :</p>
+<blockquote>
+<div><p>Variances of the different observations (vector, same size as curve_f)</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>synth_rate, fluo_smoothed, ic, alpha, ascores</strong> :</p>
+<blockquote>
+<div><p>As described below.</p>
+</div></blockquote>
+<p><strong>synth_rate</strong> :</p>
+<blockquote>
+<div><p>Vector. Inferred control.</p>
+</div></blockquote>
+<p><strong>fluo_smoothed</strong> :</p>
+<blockquote>
+<div><p>The predicted value of the observed data at the same time
+points as the data. y_smoothed will appear smoothed compared
+to y.</p>
+</div></blockquote>
+<p><strong>mod</strong> :</p>
+<blockquote class="last">
+<div><p>instance of sklearn.linear_model.RidgeCV, used for the Ridge
+regularization / cross-validation. Useful to get the value
+of the parameter alpha used etc.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.ILM.infer_promact">
+<tt class="descclassname">wellfare.ILM.</tt><tt class="descname">infer_promact</tt><big>(</big><em>curve_fluo</em>, <em>curve_volume</em>, <em>ttu</em>, <em>drna</em>, <em>kr</em>, <em>dR</em>, <em>alphas=None</em>, <em>eps_L=0.0001</em><big>)</big><a class="headerlink" href="#wellfare.ILM.infer_promact" title="Permalink to this definition">¶</a></dt>
+<dd><p>dF/dt = s(t)V(t) - degr*F</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>curve_fluo</strong> :</p>
+<blockquote>
+<div><p>A curve instance representing the (noisy) measured
+fluorescence</p>
+</div></blockquote>
+<p><strong>curve_volume</strong> :</p>
+<blockquote>
+<div><p>A curve instance representing the (noisy) measured
+volume</p>
+</div></blockquote>
+<p><strong>ttu</strong> :</p>
+<blockquote>
+<div><p>Times at which the control is</p>
+</div></blockquote>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>synth_rate, fluo_smoothed, ic, alpha, ascores</strong> :</p>
+<blockquote>
+<div><p>As described below.</p>
+</div></blockquote>
+<p><strong>synth_rate</strong> :</p>
+<blockquote>
+<div><p>Vector. Inferred control.</p>
+</div></blockquote>
+<p><strong>fluo_smoothed</strong> :</p>
+<blockquote>
+<div><p>The predicted value of the observed data at the same time
+points as the data. y_smoothed will appear smoothed compared
+to y.</p>
+</div></blockquote>
+<p><strong>mod</strong> :</p>
+<blockquote class="last">
+<div><p>instance of sklearn.linear_model.RidgeCV, used for the Ridge
+regularization / cross-validation. Useful to get the value
+of the parameter alpha used etc.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.ILM.infer_prot_conc_onestep">
+<tt class="descclassname">wellfare.ILM.</tt><tt class="descname">infer_prot_conc_onestep</tt><big>(</big><em>curve_f</em>, <em>curve_v</em>, <em>ttu</em>, <em>dR</em>, <em>dP</em>, <em>alphas=None</em>, <em>eps_L=0.0001</em>, <em>positive=False</em><big>)</big><a class="headerlink" href="#wellfare.ILM.infer_prot_conc_onestep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the concentration of a protein P, given
+the fluorescence of reporter R.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>curve_f</strong> :</p>
+<blockquote>
+<div><p>A curve instance representing the measured fluorescence
+(proportional to the quantities of reporter)</p>
+</div></blockquote>
+<p><strong>curve_v</strong> :</p>
+<blockquote>
+<div><p>Volume of the population.</p>
+</div></blockquote>
+<p><strong>dR</strong> :</p>
+<blockquote>
+<div><p>Degradation rate of the reporter</p>
+</div></blockquote>
+<p><strong>dP</strong> :</p>
+<blockquote>
+<div><p>Degradation rate of the proteins.</p>
+</div></blockquote>
+<p><strong>alphas</strong> :</p>
+<blockquote>
+<div><p>Smoothing parameters to be tested.</p>
+</div></blockquote>
+<p><strong>eps_L</strong> :</p>
+<blockquote class="last">
+<div><p>Negligible factor for the derivation matrix.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.ILM.infer_prot_conc_multistep">
+<tt class="descclassname">wellfare.ILM.</tt><tt class="descname">infer_prot_conc_multistep</tt><big>(</big><em>curve_fluo</em>, <em>curve_volume</em>, <em>ttu</em>, <em>drna</em>, <em>kr</em>, <em>dR</em>, <em>dP</em>, <em>alphas=None</em>, <em>eps_L=0.0001</em><big>)</big><a class="headerlink" href="#wellfare.ILM.infer_prot_conc_multistep" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieves the concentration of a protein P, given
+the fluorescence of reporter R.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><p class="first"><strong>curve_fluo</strong> :</p>
+<blockquote>
+<div><p>A curve instance representing the measured fluorescence
+(proportional to the quantities of reporter)</p>
+</div></blockquote>
+<p><strong>curve_volume</strong> :</p>
+<blockquote>
+<div><p>Volume of the population.</p>
+</div></blockquote>
+<p><strong>dR</strong> :</p>
+<blockquote>
+<div><p>Degradation rate of the reporter</p>
+</div></blockquote>
+<p><strong>dP</strong> :</p>
+<blockquote>
+<div><p>Degradation rate of the proteins.</p>
+</div></blockquote>
+<p><strong>alphas</strong> :</p>
+<blockquote>
+<div><p>Smoothing parameters to be tested.</p>
+</div></blockquote>
+<p><strong>eps_L</strong> :</p>
+<blockquote class="last">
+<div><p>Negligible factor for the derivation matrix.</p>
+</div></blockquote>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="wellfare-preprocessing">
+<h2>wellfare.preprocessing<a class="headerlink" href="#wellfare-preprocessing" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-wellfare.parsing"></span><dl class="function">
+<dt id="wellfare.parsing.parse_tecan">
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">parse_tecan</tt><big>(</big><em>filename</em>, <em>sheet_index=None</em><big>)</big><a class="headerlink" href="#wellfare.parsing.parse_tecan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses a .xlsx file from a cinetic experiment</p>
+<p>File specifications:</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.parsing.workbook2numpy">
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">workbook2numpy</tt><big>(</big><em>filename</em>, <em>sheet_index=None</em><big>)</big><a class="headerlink" href="#wellfare.parsing.workbook2numpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>loads the xlsx file as a (Numpy) array, or list of
+numpy arrays if there are several sheets.
+If <cite>sheetindex</cite> is None,</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.parsing.sheet2numpy">
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">sheet2numpy</tt><big>(</big><em>sheet</em><big>)</big><a class="headerlink" href="#wellfare.parsing.sheet2numpy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Conversts a xlread Excel sheet to a numpy array</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.parsing.parse_labels">
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">parse_labels</tt><big>(</big><em>sheet</em>, <em>i</em>, <em>wells_dict</em>, <em>start_time</em><big>)</big><a class="headerlink" href="#wellfare.parsing.parse_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses the different labels encountered (and fills the given
+plate until an &#8220;End Time:&#8221; cell is found.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.parsing.parse_label">
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">parse_label</tt><big>(</big><em>sheet</em>, <em>i</em>, <em>wells_dict</em>, <em>start_time=0</em>, <em>timePerWell=True</em>, <em>over_replace=-1</em>, <em>per_column=False</em><big>)</big><a class="headerlink" href="#wellfare.parsing.parse_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parses an array of measurements, supposing that
+line i of arr in the first line of an array of the form:
+Cycle Nr,  1,  2
+Time [s],  0,  34.5
+Temp. [C], 23.5, 23.5
+A1, 0.3174999952, 0.3181999922
+t   00            30 &lt;- time per well activated
+A2, 0.3980999887, 0.4104000032
+t   02            32</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.parsing.merge_wells_dicts">
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">merge_wells_dicts</tt><big>(</big><em>wells_dicts</em><big>)</big><a class="headerlink" href="#wellfare.parsing.merge_wells_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Merges the dictionnaries</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.parsing.date2seconds">
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">date2seconds</tt><big>(</big><em>timeString</em><big>)</big><a class="headerlink" href="#wellfare.parsing.date2seconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a Tecan date string (&#8220;08/10/2013 17:44:24&#8221;)
+into seconds since 1970/1/1</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="wellfare.parsing.parse_fusion">
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">parse_fusion</tt><big>(</big><em>dataFile</em>, <em>descriptionFile=None</em>, <em>verbose=False</em>, <em>**kwargs</em><big>)</big><a class="headerlink" href="#wellfare.parsing.parse_fusion" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a new plate dataset from the raw data of the
+fusion plate reader.</p>
+<p>You can provide the vocable as keyword-argument:
+vocable = { &#8216;lum&#8217;:&#8217;Lum&#8217;, &#8216;fluo&#8217;:&#8217;Fluo&#8217;, &#8216;Abs&#8217;:&#8217;Abs&#8217; }</p>
+</dd></dl>
+
+</div>
+<div class="section" id="wellfare-parsing">
+<h2>wellfare.parsing<a class="headerlink" href="#wellfare-parsing" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-wellfare.parsing"></span><dl class="function">
+<dt>
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">parse_tecan</tt><big>(</big><em>filename</em>, <em>sheet_index=None</em><big>)</big></dt>
+<dd><p>Parses a .xlsx file from a cinetic experiment</p>
+<p>File specifications:</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">workbook2numpy</tt><big>(</big><em>filename</em>, <em>sheet_index=None</em><big>)</big></dt>
+<dd><p>loads the xlsx file as a (Numpy) array, or list of
+numpy arrays if there are several sheets.
+If <cite>sheetindex</cite> is None,</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">sheet2numpy</tt><big>(</big><em>sheet</em><big>)</big></dt>
+<dd><p>Conversts a xlread Excel sheet to a numpy array</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">parse_labels</tt><big>(</big><em>sheet</em>, <em>i</em>, <em>wells_dict</em>, <em>start_time</em><big>)</big></dt>
+<dd><p>Parses the different labels encountered (and fills the given
+plate until an &#8220;End Time:&#8221; cell is found.</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">parse_label</tt><big>(</big><em>sheet</em>, <em>i</em>, <em>wells_dict</em>, <em>start_time=0</em>, <em>timePerWell=True</em>, <em>over_replace=-1</em>, <em>per_column=False</em><big>)</big></dt>
+<dd><p>Parses an array of measurements, supposing that
+line i of arr in the first line of an array of the form:
+Cycle Nr,  1,  2
+Time [s],  0,  34.5
+Temp. [C], 23.5, 23.5
+A1, 0.3174999952, 0.3181999922
+t   00            30 &lt;- time per well activated
+A2, 0.3980999887, 0.4104000032
+t   02            32</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">merge_wells_dicts</tt><big>(</big><em>wells_dicts</em><big>)</big></dt>
+<dd><p>Merges the dictionnaries</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">date2seconds</tt><big>(</big><em>timeString</em><big>)</big></dt>
+<dd><p>Converts a Tecan date string (&#8220;08/10/2013 17:44:24&#8221;)
+into seconds since 1970/1/1</p>
+</dd></dl>
+
+<dl class="function">
+<dt>
+<tt class="descclassname">wellfare.parsing.</tt><tt class="descname">parse_fusion</tt><big>(</big><em>dataFile</em>, <em>descriptionFile=None</em>, <em>verbose=False</em>, <em>**kwargs</em><big>)</big></dt>
+<dd><p>Creates a new plate dataset from the raw data of the
+fusion plate reader.</p>
+<p>You can provide the vocable as keyword-argument:
+vocable = { &#8216;lum&#8217;:&#8217;Lum&#8217;, &#8216;fluo&#8217;:&#8217;Fluo&#8217;, &#8216;Abs&#8217;:&#8217;Abs&#8217; }</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="../cli.html" class="btn btn-neutral" title="Command-line interface"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2014, Valentin.
+    </p>
+  </div>
+
+  <a href="https://github.com/snide/sphinx_rtd_theme">Sphinx theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../_static/jquery.js"></script>
+      <script type="text/javascript" src="../_static/underscore.js"></script>
+      <script type="text/javascript" src="../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
