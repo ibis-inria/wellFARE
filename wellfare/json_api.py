@@ -8,7 +8,7 @@ to be performed.
 """
 
 import numpy as np
-from pycurves import Curve
+from .curves import Curve
 
 from .ILM import (infer_growth_rate,
                   infer_synthesis_rate,
@@ -63,21 +63,23 @@ def wellfare_growth(data):
         'values_growth_rate': [...]
        }
     """
-
+    print "Starting ---"
     curve_v = Curve(data['times_volume'],
                     data['values_volume'])
-    
+    print "Got data"    
+
     check_noNaN(curve_v.y, "curve_v.y", "wellfare_growth")    
 
     ttu = np.arange(curve_v.x.min(), curve_v.x.max(), 2.0)[:-3]
     
+    print "Starting computations" 
     alphas = 10.0**np.linspace(-5,8,1000)
     growth, volume, _, _, _ = infer_growth_rate(curve_v, ttu,
                                                 alphas=alphas, eps_L=1e-6)
-
+    print "finished computations"
     check_noNaN(growth.y, "growth.y", "wellfare_growth")
     
-
+    
     return {'times_growth_rate': list(growth.x.astype(float)),
             'values_growth_rate': list(growth.y.astype(float))}
 
