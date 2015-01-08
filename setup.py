@@ -21,6 +21,5 @@ setup(name='wellfare',
     long_description=open('README.rst').read(),
     license='see LICENSE.txt',
     keywords="",
-    scripts=['bin/wellfare'],
     install_requires= ['docopt', 'xlrd', 'numpy', 'scipy'],
     packages= find_packages(exclude=['docs','examples']))

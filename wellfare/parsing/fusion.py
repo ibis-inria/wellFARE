@@ -12,7 +12,7 @@ import xlrd
 import numpy as np
 import csv
 
-from pycurves import Curve
+from ..curves import Curve
 
 ### ====   TIME  TOOLS =======
 

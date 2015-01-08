@@ -11,7 +11,7 @@ import datetime
 import xlrd
 import numpy as np
 
-from pycurves import Curve
+from ..curves import Curve
 
 def parse_tecan(filename, sheet_index=None):
     """ Parses a .xlsx file from a cinetic experiment

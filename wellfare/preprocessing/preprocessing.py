@@ -6,7 +6,7 @@ For the moment, the only feature implemented  the removal of ouliers caused by b
 
 
 import numpy as np
-from pycurves import Curve
+from ..curves import Curve
 
 def remove_bumps(curve, side, percentile=50, niter=1, goal=0):
     """ Removes onesided outliers
