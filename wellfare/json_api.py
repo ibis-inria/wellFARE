@@ -1,5 +1,4 @@
 
-
 """
 This module contains helper functions to communicate with wellfare
 using JSON dictionnaries. The main function is json_process, which
@@ -55,7 +54,8 @@ def wellfare_growth(data):
 
     Input :
       { 'times_volume': [...] ,
-        'values_volume': [...]
+        'values_volume': [...],
+        'n_control_points': 100 # number of control points, 100 is default
        }
 
     Output :
@@ -66,10 +66,12 @@ def wellfare_growth(data):
 
     curve_v = Curve(data['times_volume'],
                     data['values_volume'])
-    
-    check_noNaN(curve_v.y, "curve_v.y", "wellfare_growth")    
 
-    ttu = np.arange(curve_v.x.min(), curve_v.x.max(), 2.0)[:-3]
+    n_control_points = data.get('n_control_points',100)
+
+    check_noNaN(curve_v.y, "curve_v.y", "wellfare_growth")
+
+    ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points)[:-3]
     
     alphas = 10.0**np.linspace(-5,8,1000)
     growth, volume, _, _, _ = infer_growth_rate(curve_v, ttu,
@@ -78,8 +80,8 @@ def wellfare_growth(data):
     check_noNaN(growth.y, "growth.y", "wellfare_growth")
     
 
-    return {'times_growth_rate': list(growth.x.astype(float)),
-            'values_growth_rate': list(growth.y.astype(float))}
+    return { 'times_growth_rate': list(growth.x.astype(float)),
+             'values_growth_rate': list(growth.y.astype(float))}
 
 
 
@@ -94,7 +96,10 @@ def wellfare_activity(data):
         'values_volume': [...],
         'times_fluo': [...],
         'values_fluo': [...],
-        'dR': float
+        'dR': float, // degradation constant of the reporter
+        'kR': float // (optional) folding constant of the reporter.
+        'dRNA': float // (optional) degradation constant of the RNA.
+        
        }
 
     Output:
@@ -107,15 +112,29 @@ def wellfare_activity(data):
                     data['values_volume'])
     curve_f = Curve(data['times_fluo'],
                     data['values_fluo'])
-    dR = data['dR']
 
+    dR = data['dR']
+    
     ttu = np.arange(curve_v.x.min(), curve_v.x.max(), 2.0)[:-3]
 
-    synth_rate, _, _, _, _ = infer_synthesis_rate(
-        curve_v=curve_v,
-        curve_f=curve_f,
-        ttu = ttu,
-        degr=dR)
+    if 'kR' in data:
+        # use a two-step model of reporter expression
+        # if no dRNA provided it is supposed to be very short-lived so that
+        # the transcription step won't impact the dynamics of gene expression
+        dRNA = data.get('dRNA', 1.0)
+        synth_rate, _, _, _, _ = infer_promact(
+            curve_v=curve_v,
+            curve_f=curve_f,
+            ttu = ttu,
+            degr=dR)
+
+    else:
+        # use a one-step model of reporter expression
+        synth_rate, _, _, _, _ = infer_synthesis_rate(
+            curve_v=curve_v,
+            curve_f=curve_f,
+            ttu = ttu,
+            degr=dR)
 
     return {'times_activity': list(synth_rate.x.astype(float)),
             'values_activity': list(synth_rate.y.astype(float))}
@@ -129,10 +148,10 @@ def wellfare_concentration(data):
     Command: 'concentration'
 
     Input:
-      { 'times_volume': [... ,
-        'values_volume': [...,
-        'times_fluo: [...,
-        'values_fluo: [...,
+      { 'times_volume': [...] ,
+        'values_volume': [...],
+        'times_fluo: [...],
+        'values_fluo: [...],
         'dR': float,
         'dP': float
        }
@@ -281,8 +300,9 @@ def wellfare_synchronize(data):
     time_shift = curve_1.find_shift_gradient([curve_2], tt,
                                            shifts0 = shifts0)[0]
     
-    
     return {'time_shift': time_shift}
+
+
 
 def wellfare_subtract(data):
     """ Returns the difference between two curves.

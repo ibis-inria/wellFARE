@@ -75,7 +75,7 @@ def make_H(model, obs, ttu, tty):
 
 
 def infer_promact(curve_fluo, curve_volume, ttu, drna, kr, dR,
-                       alphas=None, eps_L=.0001):
+                  alphas=None, eps_L=.0001):
     """
 
     
@@ -111,10 +111,11 @@ def infer_promact(curve_fluo, curve_volume, ttu, drna, kr, dR,
       points as the data. y_smoothed will appear smoothed compared
       to y.
     
-    mod
-      instance of sklearn.linear_model.RidgeCV, used for the Ridge
-      regularization / cross-validation. Useful to get the value
-      of the parameter alpha used etc.
+    ic
+      Estimation of the initial concentration of rna/reporter/mature reporter
+
+    alpha
+      The value of alpha chosen by the algortihm.
     """
 
     if alphas is None:
