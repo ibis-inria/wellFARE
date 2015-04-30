@@ -6,6 +6,7 @@ using JSON dictionnaries. The main function is json_process, which
 will call one of the subsequent functions depending on the TASK
 to be performed.
 """
+from __future__ import print_function
 
 import numpy as np
 from .curves import Curve
@@ -63,20 +64,20 @@ def wellfare_growth(data):
         'values_growth_rate': [...]
        }
     """
-    print "Starting ---"
+    print("Starting ---")
     curve_v = Curve(data['times_volume'],
                     data['values_volume'])
-    print "Got data"    
+    print("Got data")    
 
     check_noNaN(curve_v.y, "curve_v.y", "wellfare_growth")    
 
     ttu = np.arange(curve_v.x.min(), curve_v.x.max(), 2.0)[:-3]
     
-    print "Starting computations" 
+    print("Starting computations") 
     alphas = 10.0**np.linspace(-5,8,1000)
     growth, volume, _, _, _ = infer_growth_rate(curve_v, ttu,
                                                 alphas=alphas, eps_L=1e-6)
-    print "finished computations"
+    print("finished computations")
     check_noNaN(growth.y, "growth.y", "wellfare_growth")
     
     

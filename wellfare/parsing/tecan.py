@@ -15,26 +15,26 @@ from ..curves import Curve
 
 def parse_tecan(filename, sheet_index=None):
     """ Parses a .xlsx file from a cinetic experiment
-    
+
     File specifications:
 
 
     """
     sheets = workbook2numpy(filename, sheet_index=sheet_index)
-    
+
     if isinstance(sheets, list):
         starts = map(find_start_in_sheet, sheets)
         t0 = min([ s for s in starts if (s is not None)])
         return [parseSheet(sheet, t0=t0)[1] for sheet in sheets]
     else:
         return parseSheet(sheets)
-    
+
 
 def workbook2numpy(filename, sheet_index=None):
     """ loads the xlsx file as a (Numpy) array, or list of
         numpy arrays if there are several sheets.
         If `sheetindex` is None, """
-    
+
     book = xlrd.open_workbook(filename)
     sheets = np.array(book.sheets())
     if sheet_index is None:
@@ -48,7 +48,7 @@ def workbook2numpy(filename, sheet_index=None):
                 res.append(sheet2numpy(sh))
             except:
                 pass
-        
+
     return res[0] if len(res)==1 else res
 
 
@@ -73,7 +73,7 @@ def sheet2numpy(sheet):
 
 
 def parse_sheet(sheet, t0 = None):
-    
+
     wells_dict = { "%s%d"%(c,i) : dict() for c in "ABCDEFGH"
                                          for i in range(1,13) }
     start_time = 0
@@ -86,7 +86,7 @@ def parse_sheet(sheet, t0 = None):
                 t0 = start_time
             start_time = start_time-t0
             parseLabels(sheet,i, wells_dict, start_time)
-    
+
     return t0, wells_dict
 
 
@@ -103,7 +103,7 @@ def parse_labels(sheet,i, wells_dict, start_time):
         j +=1
 
 
-       
+
 def parse_label(sheet,i, wells_dict,  start_time=0,
                 timePerWell=True, over_replace = -1,
                 per_column=False):
@@ -119,7 +119,7 @@ def parse_label(sheet,i, wells_dict,  start_time=0,
     t   02            32
     """
     label = sheet[i-1,0]
-    
+
 
     if per_column:
         sheet = sheet[i:,:].T
@@ -130,53 +130,53 @@ def parse_label(sheet,i, wells_dict,  start_time=0,
         xmax = list(sheet[i]).index(u'') - 1
     except:
         xmax = len(list(sheet[i]))
-    
-    
+
+
     if not timePerWell:
         # read the times once and for all
         tt = sheet[i+1, 1:xmax].astype(float)/60000 + start_time
         j = i+3
     else:
         j=i+2
-        
+
     while (j<sheet.shape[0]) and (sheet[j,0] != u''):
-        
+
         try:
             xmax = list(sheet[j]).index(u'') - 1
         except:
             xmax = len(list(sheet[j]))
-    
+
         well = sheet[j,0]
-        
+
         if timePerWell:
             tt = sheet[j+1, 1:xmax].astype(float)/60000 + start_time
-            
+
         yy = sheet[j,1:xmax]
         yy[yy == 'OVER'] = over_replace
         curve = Curve(tt.astype(float), yy.astype(float))
-        
+
         if not (label in wells_dict[well].keys()):
             wells_dict[well][label] = curve
         else:
             wells_dict[well][label] = wells[well][label].merge_with(curve)
-            
+
         j += 2 if timePerWell else 1
-        
+
 
 
 def merge_wells_dicts(wells_dicts):
     """
-    Merges the dictionnaries 
+    Merges the dictionnaries
     """
-    
+
     result = { "%s%d"%(c,i) : dict() for c in "ABCDEFGH"
                                          for i in range(1,13) }
     for wells_dict in wells_dicts:
-        
+
         for well, curves_dict in wells_dict.items():
-            
+
             for label,curve in curves_dict.items():
-                
+
                 if not (label in result[well].keys()):
                     result[well][label] = curve
                 else:
@@ -184,7 +184,7 @@ def merge_wells_dicts(wells_dicts):
                         result[well][label].merge_with(curve)
     return result
 
-        
+
 def to_coords(s):
     """ Converts "A5", "C11", ... into (0,5), (2,11) ... """
     return  ( "ABCDEFGH".index(s[0]), int(s[1:])-1 )
