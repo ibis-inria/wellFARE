@@ -4,7 +4,6 @@ of the excel files produced by the Fusion (add ref).
 
 
 """
-from __future__ import print_function
 
 
 import re
@@ -60,7 +59,7 @@ def parse_fusion(dataFile, descriptionFile = None, verbose = False, **kwargs):
     
     reference_time = None
     res = csv.reader(open(dataFile, "rb"))
-    row = next(res)
+    row = res.next()
     is_24h_passed = False # trick to handle 24h < t <48h experiments 
     
     try:
@@ -70,7 +69,7 @@ def parse_fusion(dataFile, descriptionFile = None, verbose = False, **kwargs):
             sRow = map(lambda s : s.strip(' '),row)
             
             if verbose :
-                print(sRow)
+                print sRow
                 
             if len(sRow) and ( sRow[0] == 'Assay:'):
                 
@@ -81,7 +80,7 @@ def parse_fusion(dataFile, descriptionFile = None, verbose = False, **kwargs):
                 
             elif len(sRow) and (sRow[0] == "Well Number"):
                 
-                r = next(res)
+                r = res.next()
                 
                 while len(r):
                     
@@ -120,11 +119,11 @@ def parse_fusion(dataFile, descriptionFile = None, verbose = False, **kwargs):
                         wells[well_name][parsed_variable]['times'].append(t)
                         wells[well_name][parsed_variable]['values'].append(float(value))
                     
-                    r = next(res)  
+                    r = res.next()  
                     if verbose:
                         print(r)
                     
-            row = next(res)
+            row = res.next()
             
     except StopIteration:
         pass
