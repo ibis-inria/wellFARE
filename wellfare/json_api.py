@@ -7,7 +7,7 @@ to be performed.
 """
 
 import numpy as np
-from pycurves import Curve
+from .curves import Curve
 
 from .ILM import (infer_growth_rate,
                   infer_synthesis_rate,
@@ -15,6 +15,20 @@ from .ILM import (infer_growth_rate,
                   
 from .preprocessing import filter_outliers 
 
+
+
+DEFAULTS = {
+    'n_control_points':100,
+    'dRNA': 1.0,
+}
+def get_var_with_default(data, var):
+    if var in data:
+        return data.get(var)
+    elif var in DEFAULTS:
+        return DEFAULTS[var]
+    else:
+        raise ValueError("Variable %s was not provided and no default value"%var
+                        +" is known for this variable (check spelling ?)")
 
 def check_noNaN(array, name, fun, additional_message=''):
     if np.isnan(np.sum(array)):
@@ -55,7 +69,7 @@ def wellfare_growth(data):
     Input :
       { 'times_volume': [...] ,
         'values_volume': [...],
-        'n_control_points': 100 # number of control points, 100 is default
+        'n_control_points': 100 // optional, 100 is default
        }
 
     Output :
@@ -63,25 +77,24 @@ def wellfare_growth(data):
         'values_growth_rate': [...]
        }
     """
-
+    print "Starting ---"
     curve_v = Curve(data['times_volume'],
                     data['values_volume'])
 
-    n_control_points = data.get('n_control_points',100)
-
     check_noNaN(curve_v.y, "curve_v.y", "wellfare_growth")
-
-    ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points)[:-3]
     
+    n_control_points = get_var_with_default(data, 'n_control_points')
+    ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
+    
+    print "Starting computations" 
     alphas = 10.0**np.linspace(-5,8,1000)
     growth, volume, _, _, _ = infer_growth_rate(curve_v, ttu,
                                                 alphas=alphas, eps_L=1e-6)
-
+    print "finished computations"
     check_noNaN(growth.y, "growth.y", "wellfare_growth")
     
-
-    return { 'times_growth_rate': list(growth.x.astype(float)),
-             'values_growth_rate': list(growth.y.astype(float))}
+    return {'times_growth_rate': list(growth.x.astype(float)),
+            'values_growth_rate': list(growth.y.astype(float))}
 
 
 
@@ -99,7 +112,7 @@ def wellfare_activity(data):
         'dR': float, // degradation constant of the reporter
         'kR': float // (optional) folding constant of the reporter.
         'dRNA': float // (optional) degradation constant of the RNA.
-        
+        'n_control_points':100 // 100 is the default
        }
 
     Output:
@@ -115,7 +128,9 @@ def wellfare_activity(data):
 
     dR = data['dR']
     
-    ttu = np.arange(curve_v.x.min(), curve_v.x.max(), 2.0)[:-3]
+
+    n_control_points = get_var_with_default(data, 'n_control_points')
+    ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
 
     if 'kR' in data:
         # use a two-step model of reporter expression
@@ -126,7 +141,9 @@ def wellfare_activity(data):
             curve_v=curve_v,
             curve_f=curve_f,
             ttu = ttu,
-            degr=dR)
+            drna = dRNA,
+            kr = kR,
+            dR=dR)
 
     else:
         # use a one-step model of reporter expression
@@ -153,7 +170,8 @@ def wellfare_concentration(data):
         'times_fluo: [...],
         'values_fluo: [...],
         'dR': float,
-        'dP': float
+        'dP': float,
+        'n_control_points': 100 // optional, 100 is default
        }
 
     Output:
@@ -170,13 +188,28 @@ def wellfare_concentration(data):
     dR = data['dR']
     dP = data['dP']
     
-    ttu = np.arange(curve_v.x.min(), curve_v.x.max(), 2.0)[:-3]
-
-    concentration, _, _, _, _ = infer_prot_conc_onestep(
-        curve_v=curve_v,
-        curve_f=curve_f,
-        ttu = ttu,
-        dR=dR, dP = dP)
+    n_control_points = get_var_with_default(data, 'n_control_points')
+    ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
+    
+    if 'kR' in data:
+        # use a two-step model of reporter expression
+        # if no dRNA provided it is supposed to be very short-lived so that
+        # the transcription step won't impact the dynamics of gene expression
+        dRNA = get_var_with_default(data, 'dRNA')
+        concentration, _, _, _, _ = infer_prot_conc_multistep(
+            curve_v=curve_v,
+            curve_f=curve_f,
+            ttu = ttu,
+            drna= dRNA,
+            kr=kR,
+            dR=dR,
+            dP=dP)
+    else:
+        concentration, _, _, _, _ = infer_prot_conc_onestep(
+            curve_v=curve_v,
+            curve_f=curve_f,
+            ttu = ttu,
+            dR=dR, dP = dP)
 
     return {'times_concentration': list(concentration.x.astype(float)),
             'values_concentration': list(concentration.y.astype(float))}

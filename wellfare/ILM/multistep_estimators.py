@@ -74,22 +74,24 @@ def make_H(model, obs, ttu, tty):
 # ===  Promact  =================================================
 
 
-def infer_promact(curve_fluo, curve_volume, ttu, drna, kr, dR,
+def infer_promact(curve_f, curve_v, ttu, drna, kr, dR,
                   alphas=None, eps_L=.0001):
     """
 
+    Model:
     
-    dF/dt = s(t)V(t) - degr*F
-
+    dRrna/dt = promact(t) - dRrna Rrna(t)
+    dRi/dt = Rrna(t) - (dR+kR) Ri(t)
+    dR/dt = kR Ri(t) - dR R(t)
 
     Parameters
     -----------
 
-    curve_fluo
+    curve_f
       A curve instance representing the (noisy) measured
       fluorescence
 
-    curve_volume
+    curve_v
       A curve instance representing the (noisy) measured
       volume
 
@@ -151,7 +153,7 @@ def infer_promact(curve_fluo, curve_volume, ttu, drna, kr, dR,
 
 
 
-def infer_prot_conc_multistep(curve_fluo, curve_volume, ttu, drna, kr, dR,
+def infer_prot_conc_multistep(curve_f, curve_v, ttu, drna, kr, dR,
                     dP, alphas=None, eps_L=0.0001):
     """ Retrieves the concentration of a protein P, given
     the fluorescence of reporter R.
