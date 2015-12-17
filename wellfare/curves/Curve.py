@@ -38,7 +38,7 @@ Here is what you get with pycurves:
 """
 from __future__ import print_function
 
-
+import pandas
 
 import pickle
 from copy import deepcopy
@@ -395,7 +395,7 @@ class Curve:
         if t is not None:
             D = self(t)
         elif region is not None:
-            D = self.chop(region).mean()
+            D = self.crop(region).mean()
         else:
             D =  self.mean()
 
@@ -408,7 +408,6 @@ class Curve:
         Returns the discrete derivatives, or increases, of
         the measure
         """
-
         res = []
         l,r = (win/2,win/2) if sym else (0,win)
         lx = len(self.x)
