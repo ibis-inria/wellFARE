@@ -38,8 +38,6 @@ Here is what you get with pycurves:
 """
 from __future__ import print_function
 
-import pandas
-
 import pickle
 from copy import deepcopy
 
@@ -127,7 +125,7 @@ class Curve:
 
         if xy is not None:
             x,y= zip(*xy)
-        self.x= np.array( x )
+        self.x= np.array(x)
         self.y= np.array(y)
         self.left_value = left_value
         self.right_value = right_value
