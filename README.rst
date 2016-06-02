@@ -9,8 +9,13 @@ WellFARE has been developped in team Ibis (INRIA, France) and is licenced under 
 Installation
 --------------
 
-WellFARE can be installed by unzipping the source code in one directory and using this command: ::
+You need to install numpy before trying to install WellFARE.
+You can do it from your distribution repository or directly from the Python Package Index with this command: ::
 
+    sudo pip install numpy
+
+WellFARE can be installed by unzipping the source code in one directory and using this command: ::
+    
     sudo python setup.py install
 
 You can also install it directly from the Python Package Index with this command: ::

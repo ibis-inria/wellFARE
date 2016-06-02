@@ -38,8 +38,6 @@ Here is what you get with pycurves:
 """
 from __future__ import print_function
 
-
-
 import pickle
 from copy import deepcopy
 
@@ -127,7 +125,7 @@ class Curve:
 
         if xy is not None:
             x,y= zip(*xy)
-        self.x= np.array( x )
+        self.x= np.array(x)
         self.y= np.array(y)
         self.left_value = left_value
         self.right_value = right_value
@@ -395,7 +393,7 @@ class Curve:
         if t is not None:
             D = self(t)
         elif region is not None:
-            D = self.chop(region).mean()
+            D = self.crop(region).mean()
         else:
             D =  self.mean()
 
@@ -408,7 +406,6 @@ class Curve:
         Returns the discrete derivatives, or increases, of
         the measure
         """
-
         res = []
         l,r = (win/2,win/2) if sym else (0,win)
         lx = len(self.x)
@@ -1147,6 +1144,52 @@ class Curve:
 
         return line
 
+    def hist(self,ax = None, hold = False, **plot_kw):
+        """ Plots the histogram of the Curve using Matplotlib
+
+        ``curve.hist()`` is equivalent to (but shorter)
+
+        >>> import matplotlib.pyplot as plt
+        >>> plt.hist(curve.y)
+
+        Parameters
+        -----------
+
+        ax
+          The Matplotlib `ax` on which to draw the curve
+
+        hold
+          Should be True in non-interactive sessions in order to be
+          able to actually see the curve. Unnecessary in the IPython
+          Notebook.
+
+        **plot_kw
+          Any of the (very many) options of Matplotlib's plot method:
+          'color', 'marker', 'label' (for the legend),
+          'lw' (linewidth), 'ls' (linestyle), etc. See Matplotlib's
+          doc for more details.
+
+
+        Examples
+        ---------
+
+        >>> fig, ax = plt.subplots(1,2)
+        >>> curve.hist(ax[1], color='blue', bins=50, label='curve')
+
+        """
+
+        if not MATPLOTLIB_DETECTED:
+            raise ImportError("You need to install Matplotlib in"
+                               "order to plot curves.")
+
+        if ax is None:
+            fig,ax = plt.subplots(1)
+        line = ax.hist(self.y, **plot_kw)
+
+        if hold:
+            plt.show()
+
+        return line
 
 
 # ====================================================================
