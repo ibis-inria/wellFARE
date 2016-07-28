@@ -13,6 +13,7 @@ import numpy as np
 
 from ..curves import Curve
 
+
 def parse_tecan(filename, sheet_index=None):
     """ Parses a .xlsx file from a cinetic experiment
 
@@ -25,9 +26,9 @@ def parse_tecan(filename, sheet_index=None):
     if isinstance(sheets, list):
         starts = map(find_start_in_sheet, sheets)
         t0 = min([ s for s in starts if (s is not None)])
-        return [parseSheet(sheet, t0=t0)[1] for sheet in sheets]
+        return [parse_sheet(sheet, t0=t0)[1] for sheet in sheets]
     else:
-        return parseSheet(sheets)
+        return parse_sheet(sheets)
 
 
 def workbook2numpy(filename, sheet_index=None):
@@ -85,7 +86,7 @@ def parse_sheet(sheet, t0 = None):
             if t0 is None:
                 t0 = start_time
             start_time = start_time-t0
-            parseLabels(sheet,i, wells_dict, start_time)
+            parse_labels(sheet,i, wells_dict, start_time)
 
     return t0, wells_dict
 
@@ -99,7 +100,7 @@ def parse_labels(sheet,i, wells_dict, start_time):
     j = i
     while sheet[j][0] != "End Time:":
         if sheet[j][0] == "Cycle Nr.":
-            parseLabel(sheet,j, wells_dict,  start_time)
+            parse_label(sheet,j, wells_dict,  start_time)
         j +=1
 
 
@@ -131,6 +132,8 @@ def parse_label(sheet,i, wells_dict,  start_time=0,
     except:
         xmax = len(list(sheet[i]))
 
+    if sheet[i+1][1] == '':
+        return #return if the first data element is empty (meaning all data should be empty)
 
     if not timePerWell:
         # read the times once and for all

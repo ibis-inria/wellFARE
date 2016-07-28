@@ -400,7 +400,7 @@ class Curve:
         return self/D
 
 
-
+    #@profile
     def diff_win(self,deriv=1, win=2, order=1, sym=True):
         """
         Returns the discrete derivatives, or increases, of
@@ -1051,7 +1051,7 @@ class Curve:
         >>> curves_list = Curves.load("curves_list.dat")
         """
 
-        with open(filename, 'w+') as output:
+        with open(filename, 'wb+') as output:
             pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
 
 

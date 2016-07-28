@@ -10,7 +10,8 @@ from .curves import Curve
 
 from .ILM import (infer_growth_rate,
                   infer_synthesis_rate,
-                  infer_prot_conc_onestep)
+                  infer_prot_conc_onestep,
+                  infer_prot_conc_multistep)
                   
 from .preprocessing import filter_outliers 
 
@@ -126,7 +127,7 @@ def wellfare_activity(data):
                     data['values_fluo'])
 
     dR = data['dR']
-    
+    send_state = data['send_state']
 
     n_control_points = get_var_with_default(data, 'n_control_points')
     ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
@@ -150,7 +151,8 @@ def wellfare_activity(data):
             curve_v=curve_v,
             curve_f=curve_f,
             ttu = ttu,
-            degr=dR)
+            degr=dR,
+            send_state = send_state)
 
     return {'times_activity': list(synth_rate.x.astype(float)),
             'values_activity': list(synth_rate.y.astype(float))}
@@ -195,6 +197,7 @@ def wellfare_concentration(data):
         # if no dRNA provided it is supposed to be very short-lived so that
         # the transcription step won't impact the dynamics of gene expression
         dRNA = get_var_with_default(data, 'dRNA')
+        kR = data['kR']
         concentration, _, _, _, _ = infer_prot_conc_multistep(
             curve_v=curve_v,
             curve_f=curve_f,
