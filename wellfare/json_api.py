@@ -128,7 +128,11 @@ def wellfare_activity(data):
                     data['values_fluo'])
 
     dR = data['dR']
-    send_state = data['send_state']
+
+    if 'send_state' in data:
+        send_state = data['send_state']
+    else:
+        send_state = None;
 
     n_control_points = get_var_with_default(data, 'n_control_points')
     ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
