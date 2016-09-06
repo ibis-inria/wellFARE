@@ -115,3 +115,36 @@ def filter_outliers(curve, percentile_above=100, percentile_below=100,
         send_state(70)
 
     return curve.filter(fl)
+
+
+def calibration_curve(abscurve, fluocurve, polyfitorder = 2):
+    """ Return raw and smoothed (polyfited) calibration curve for a background well. (Fluo = f(Abs))
+
+    """
+
+    absinterp = abscurve(fluocurve.x)
+    autofluo = fluocurve(fluocurve.x)
+
+    #sort
+    sortbyabs = np.argsort(absinterp)
+    absinterp = absinterp[sortbyabs]
+    autofluo = autofluo[sortbyabs]
+
+    #remove nan from interpolation
+    nonanargs = np.logical_not( np.logical_or(np.isnan(absinterp), np.isnan(autofluo)) )
+    absinterp = absinterp[nonanargs]
+    autofluo = autofluo[nonanargs]
+
+    print('------------ absinterp ------------')
+    print(absinterp)
+    print('------------ autofluo ------------')
+    print(autofluo)
+
+
+    fitpoly = np.polyfit(absinterp, autofluo, polyfitorder)
+    autofluo_polyfit = np.polyval(fitpoly,absinterp)
+
+    calibrationcurve = Curve(absinterp,autofluo)
+    calibrationcurve_polyfit = Curve(absinterp, autofluo_polyfit)
+
+    return [calibrationcurve,calibrationcurve_polyfit]

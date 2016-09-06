@@ -13,7 +13,7 @@ from .ILM import (infer_growth_rate,
                   infer_prot_conc_onestep,
                   infer_prot_conc_multistep)
                   
-from .preprocessing import filter_outliers 
+from .preprocessing import filter_outliers, calibration_curve
 
 
 
@@ -51,7 +51,8 @@ def json_process(command, input_data):
             'concentration': wellfare_concentration,
             'outliers': wellfare_outliers,
             'synchronize': wellfare_synchronize,
-            'subtract': wellfare_subtract
+            'subtract': wellfare_subtract,
+            'calibrationcurve': wellfare_calibrationcurve
 
            }[command](input_data)
 
@@ -371,3 +372,34 @@ def wellfare_subtract(data):
     
     return { 'times_subtraction': list(new_x),
              'values_subtraction': list(subtraction(new_x)) }
+
+
+def wellfare_calibrationcurve(data):
+    """ Returns the calibration curve (i.e. Fluo = f(Abs)) using polynomial fit.
+
+    The returned curve gives to the autofluorescence of the well as a function of its absorbance.
+
+    Command: calibrationcurve
+
+    Input:
+     { 'abs_time': [...],
+       'abs_value': [...],
+       'fluo_time': [...],
+       'fluo_value': [...] }
+
+    Output:
+     { 'calibrationcurve_abs'  : [...],
+       'calibrationcurve_fluo' : [...] }
+    """
+
+    abscurve = Curve(data['abs_time'],
+                    data['abs_value'])
+    fluocurve = Curve(data['fluo_time'],
+                    data['fluo_value'])
+
+    calibrationcurve, calibrationcurve_polyfit = calibration_curve(abscurve,fluocurve)
+
+    return {'calcurve_time': list(calibrationcurve.x.astype(float)),
+            'calcurve_value': list(calibrationcurve.y.astype(float)),
+            'calcurvepolyfit_time': list(calibrationcurve_polyfit.x.astype(float)),
+            'calcurvepolyfit_value': list(calibrationcurve_polyfit.y.astype(float))}
