@@ -14,7 +14,7 @@ import numpy as np
 from ..curves import Curve
 
 
-def parse_tecan(filename, sheet_index=None):
+def parse_tecan(filename, sheet_index=None, info=False):
     """ Parses a .xlsx file from a cinetic experiment
 
     File specifications:
@@ -23,12 +23,73 @@ def parse_tecan(filename, sheet_index=None):
     """
     sheets = workbook2numpy(filename, sheet_index=sheet_index)
 
+    if info :
+        info_dict = get_info(sheets)
+
     if isinstance(sheets, list):
         starts = map(find_start_in_sheet, sheets)
         t0 = min([ s for s in starts if (s is not None)])
-        return [parse_sheet(sheet, t0=t0)[1] for sheet in sheets]
+        if info:
+            return [[parse_sheet(sheet, t0=t0)[1] for sheet in sheets], info_dict]
+        else:
+            return [parse_sheet(sheet, t0=t0)[1] for sheet in sheets]
     else:
-        return parse_sheet(sheets)
+        if info:
+            return [parse_sheet(sheets), info_dict]
+        else:
+            return parse_sheet(sheets)
+
+
+def get_info(sheets):
+
+    info_dict = {}
+
+    if isinstance(sheets, list):
+        i = 0
+        while len(sheets[i][0]) == 0:
+            i += 1
+        sheet = sheets[i]
+
+    i = 0
+    print("SHEET", sheet.shape)
+    modeindex = 0
+    nameindex = 0
+    while i < sheet.shape[0]:
+        if sheet[i][0].startswith('List of actions'):
+            print("ACTIONS",i)
+            info_dict["actions"] = []
+            i+=1
+            while not (sheet[i][0].endswith('Labels') or sheet[i][0].endswith('Label')):
+                if len(sheet[i][0]) != 0 :
+                    linelist = [var for var in sheet[i] if var]
+                    info_dict["actions"].append([ linelist[0] , ' '.join(linelist[1:]) ])
+                i += 1
+
+        if sheet[i][0].startswith('Mode'):
+            print("MODE", i)
+            linelist = [var for var in sheet[i] if var]
+            info_dict[modeindex] = [[ linelist[0] , ' '.join(linelist[1:]) ]]
+            i += 1
+            while not (sheet[i][0].startswith('Mode') or len(sheet[i][0]) == 0 or sheet[i][0].startswith('Start Time') ):
+                linelist = [var for var in sheet[i] if var]
+                info_dict[modeindex].append([ linelist[0] , ' '.join(linelist[1:]) ])
+                i += 1
+
+            if len(sheet[i][0]) != 0:
+                i -= 1
+            modeindex += 1
+
+        if sheet[i][0].startswith('Start Time'):
+            linelist = [var for var in sheet[i] if var]
+            info_dict["Start Time"] = ' '.join(linelist[1:])
+
+        if sheet[i][0].startswith('Cycle Nr'):
+            info_dict[nameindex].append(['Name',sheet[i-1][0]])
+            nameindex += 1
+
+        i += 1
+
+    return info_dict
 
 
 def workbook2numpy(filename, sheet_index=None):
@@ -89,7 +150,6 @@ def parse_sheet(sheet, t0 = None):
             parse_labels(sheet,i, wells_dict, start_time)
 
     return t0, wells_dict
-
 
 
 def parse_labels(sheet,i, wells_dict, start_time):

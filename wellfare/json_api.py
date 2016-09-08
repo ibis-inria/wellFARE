@@ -15,6 +15,7 @@ from .ILM import (infer_growth_rate,
                   
 from .preprocessing import filter_outliers, calibration_curve
 
+from .parsing import parse_tecan, merge_wells_dicts
 
 
 DEFAULTS = {
@@ -52,7 +53,8 @@ def json_process(command, input_data):
             'outliers': wellfare_outliers,
             'synchronize': wellfare_synchronize,
             'subtract': wellfare_subtract,
-            'calibrationcurve': wellfare_calibrationcurve
+            'calibrationcurve': wellfare_calibrationcurve,
+            'parsetecan': wellfare_parsetecan
 
            }[command](input_data)
 
@@ -407,3 +409,64 @@ def wellfare_calibrationcurve(data):
             'calcurve_value': list(calibrationcurve.y.astype(float)),
             'calcurvepolyfit_time': list(calibrationcurve_polyfit.x.astype(float)),
             'calcurvepolyfit_value': list(calibrationcurve_polyfit.y.astype(float))}
+
+def wellfare_parsetecan(data):
+    """ Returns a dict containing parsed data
+
+
+    Command: parsetecan
+
+    Input:
+     { 'inputfilename': str }
+
+    Output:
+     { 'parsedfile'  : dict }
+    """
+
+    filename = data['inputfilename']
+
+    parsed_sheets, infodict = parse_tecan(filename, info=True)
+    wells = merge_wells_dicts(parsed_sheets)
+
+    jsonfile = {}
+    if 'Start Time' in infodict:
+        jsonfile['initialTime'] = infodict['Start Time']
+
+    measureindex = 0
+    jsonfile['measureTypes'] = {}
+    jsonfile['programs'] = []
+    while measureindex in infodict:
+        programinfo = {}
+        for info in infodict[measureindex]:
+            if info[0] == 'Mode':
+                mode = info[1]
+            elif info[0] == 'Name':
+                name = info[1]
+            programinfo[info[0]] = info[1]
+
+        measuretype = -1
+        if 'Abs' in mode:
+            measuretype = 0
+        elif 'Fluo' in mode:
+            measuretype = 1
+
+        jsonfile['measureTypes'][name] = measuretype
+        jsonfile['programs'].append(programinfo)
+
+        measureindex += 1
+
+    jsonfile['wells'] = {}
+    for wellname in wells:
+        well = {}
+        well['measures'] = {}
+        for measurename in jsonfile['measureTypes']:
+            if measurename in wells[wellname]:
+                measure = {}
+                measure["time"] = list(wells[wellname][measurename].x.astype(float))
+                measure["originalSignal"] = list(wells[wellname][measurename].y.astype(float))
+                well['measures'][measurename] = measure
+
+        jsonfile['wells'][wellname] = well
+
+
+    return  { 'parsedfile'  : jsonfile }
