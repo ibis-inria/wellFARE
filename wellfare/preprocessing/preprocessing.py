@@ -62,12 +62,12 @@ def remove_bumps(curve, side, percentile=50, niter=1, goal=0):
 
         dydx = np.diff(yy)/np.diff(xx)
         ddyddx = np.diff(dydx)/np.diff(xx[:-1])
+
         thr = np.percentile(-ddyddx[ddyddx<0], percentile)
-
-        if max(-ddyddx[ddyddx<0])< goal:
-            break
-
         inds = np.nonzero(ddyddx > -thr)
+
+        if max(-ddyddx[ddyddx < 0]) < goal:
+            break
         inds = [i+1 for i in inds]
         xx, yy = xx[inds],yy[inds]
 

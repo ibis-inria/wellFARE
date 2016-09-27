@@ -455,6 +455,8 @@ def wellfare_parsetecan(data):
 
         measureindex += 1
 
+    jsonfile['actions'] = infodict["actions"]
+
     jsonfile['wells'] = {}
     for wellname in wells:
         well = {}

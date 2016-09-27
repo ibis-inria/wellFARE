@@ -13,7 +13,6 @@ import numpy as np
 
 from ..curves import Curve
 
-
 def parse_tecan(filename, sheet_index=None, info=False):
     """ Parses a .xlsx file from a cinetic experiment
 
@@ -59,7 +58,7 @@ def get_info(sheets):
             print("ACTIONS",i)
             info_dict["actions"] = []
             i+=1
-            while not (sheet[i][0].endswith('Labels') or sheet[i][0].endswith('Label')):
+            while not ('Label' in sheet[i][0]):
                 if len(sheet[i][0]) != 0 :
                     linelist = [var for var in sheet[i] if var]
                     info_dict["actions"].append([ linelist[0] , ' '.join(linelist[1:]) ])
