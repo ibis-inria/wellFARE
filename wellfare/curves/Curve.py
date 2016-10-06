@@ -578,7 +578,7 @@ class Curve:
 
     def fit(self, f, **kwargs):
         """ Fits a function to the Curve with Scipy's curve_fit.
-            curve.fit(lambda x, c: c[0]*x + c[1])"""
+            curve.fit(lambda x, c1, c2: c1*x + c2)"""
         return curve_fit(f, self.x, self.y, **kwargs)
 
 
