@@ -466,21 +466,24 @@ class Curve:
 
         """
 
+        from math import factorial
 
         xx = np.linspace(self.x[0], self.x[-1], nx)
         yy = self(xx)
-        rate=1.0/(xx[1]-xx[0])
-        order_range = np.arange(0,order+1)
-        hw_range = np.arange(-hw,hw+1).reshape((2*hw+1,1))
-        b = np.mat(hw_range**order_range)
-        rate_corr = rate ** deriv * np.math.factorial(deriv)
-        m = np.linalg.pinv(b).A[deriv] * rate
-        firstvals = yy[0] - np.abs( yy[1:hw+1][::-1] - yy[0] )
-        lastvals = yy[-1] + np.abs(yy[-hw-1:-1][::-1] - yy[-1])
-        yy = np.concatenate((firstvals, yy, lastvals))
-        yy_sg= np.convolve( m[::-1], yy, mode='valid')
+        rate=1.0
 
-        return Curve(xx, yy_sg)
+        order_range = range(order + 1)
+        # precompute coefficients
+        b = np.mat([[k ** i for i in order_range] for k in range(-hw, hw + 1)])
+        m = np.linalg.pinv(b).A[deriv] * rate ** deriv * factorial(deriv)
+        # pad the signal at the extremes with
+        # values taken from the signal itself
+        firstvals = yy[0] - np.abs(yy[1:hw + 1][::-1] - yy[0])
+        lastvals = yy[-1] + np.abs(yy[-hw - 1:-1][::-1] - yy[-1])
+        yy = np.concatenate((firstvals, yy, lastvals))
+        yy = np.convolve(m[::-1], yy, mode='valid')
+
+        return Curve(xx, yy)
 
 
 

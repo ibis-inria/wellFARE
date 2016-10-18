@@ -208,22 +208,29 @@ def parse_label(sheet,i, wells_dict,  start_time=0,
         except:
             xmax = len(list(sheet[j]))
 
-        well = sheet[j,0]
+        try:
+            well = sheet[j,0]
 
-        if timePerWell:
-            tt = sheet[j+1, 1:xmax].astype(float)/60000 + start_time
+            if timePerWell:
+                tt = sheet[j+1, 1:xmax].astype(float)/60000 + start_time
 
-        yy = sheet[j,1:xmax]
-        yy[yy == 'OVER'] = over_replace
-        curve = Curve(tt.astype(float), yy.astype(float))
+            yy = sheet[j,1:xmax]
+            yy[yy == 'OVER'] = over_replace
 
-        if not (label in wells_dict[well].keys()):
-            wells_dict[well][label] = curve
-        else:
-            wells_dict[well][label] = wells[well][label].merge_with(curve)
 
-        j += 2 if timePerWell else 1
+            print(j,tt.shape,yy.shape)
+            curve = Curve(tt.astype(float), yy.astype(float))
 
+            if not (label in wells_dict[well].keys()):
+                wells_dict[well][label] = curve
+            else:
+                wells_dict[well][label] = wells[well][label].merge_with(curve)
+
+            j += 2 if timePerWell else 1
+        except:
+            j += 2 if timePerWell else 1
+            continue
+            pass
 
 
 def merge_wells_dicts(wells_dicts):

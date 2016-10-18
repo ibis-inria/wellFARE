@@ -7,6 +7,7 @@ For the moment, the only feature implemented  the removal of ouliers caused by b
 
 import numpy as np
 from ..curves import Curve
+from scipy.interpolate import UnivariateSpline
 
 
 def remove_bumps(curve, side, percentile=50, niter=1, goal=0):
@@ -117,7 +118,7 @@ def filter_outliers(curve, percentile_above=100, percentile_below=100,
     return curve.filter(fl)
 
 
-def calibration_curve(abscurve, fluocurve, polyfitorder = 2):
+def calibration_curve(abscurve, fluocurve):
     """ Return raw and smoothed (polyfited) calibration curve for a background well. (Fluo = f(Abs))
 
     """
@@ -125,26 +126,22 @@ def calibration_curve(abscurve, fluocurve, polyfitorder = 2):
     absinterp = abscurve(fluocurve.x)
     autofluo = fluocurve(fluocurve.x)
 
-    #sort
-    sortbyabs = np.argsort(absinterp)
-    absinterp = absinterp[sortbyabs]
-    autofluo = autofluo[sortbyabs]
+    #sort and remove duplicates
+    absinterp, sortedbyabs = np.unique(absinterp, return_index=True)
+    autofluo = autofluo[sortedbyabs]
 
-    #remove nan from interpolation
+    #remove nan
     nonanargs = np.logical_not( np.logical_or(np.isnan(absinterp), np.isnan(autofluo)) )
     absinterp = absinterp[nonanargs]
     autofluo = autofluo[nonanargs]
 
-    print('------------ absinterp ------------')
-    print(absinterp)
-    print('------------ autofluo ------------')
-    print(autofluo)
+    #smoothing
+    calibrationcurve = Curve(absinterp, autofluo)
+    smoothedcalcurve = calibrationcurve.smooth_sg(1000,20,3)
 
+    #extrapolate
+    spline = UnivariateSpline(smoothedcalcurve.x, smoothedcalcurve.y, k=1)
+    extrapoldistance = (absinterp.max()-absinterp.min())/10
+    extendedabs = np.linspace(absinterp.min() - extrapoldistance,absinterp.max() + extrapoldistance,1000)
 
-    fitpoly = np.polyfit(absinterp, autofluo, polyfitorder)
-    autofluo_polyfit = np.polyval(fitpoly,absinterp)
-
-    calibrationcurve = Curve(absinterp,autofluo)
-    calibrationcurve_polyfit = Curve(absinterp, autofluo_polyfit)
-
-    return [calibrationcurve,calibrationcurve_polyfit]
+    return [calibrationcurve,Curve(extendedabs, spline(extendedabs))]

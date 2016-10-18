@@ -403,12 +403,12 @@ def wellfare_calibrationcurve(data):
     fluocurve = Curve(data['fluo_time'],
                     data['fluo_value'])
 
-    calibrationcurve, calibrationcurve_polyfit = calibration_curve(abscurve,fluocurve)
+    calibrationcurve, calibrationcurve_smoothextrapolation = calibration_curve(abscurve,fluocurve)
 
     return {'calcurve_time': list(calibrationcurve.x.astype(float)),
             'calcurve_value': list(calibrationcurve.y.astype(float)),
-            'calcurvepolyfit_time': list(calibrationcurve_polyfit.x.astype(float)),
-            'calcurvepolyfit_value': list(calibrationcurve_polyfit.y.astype(float))}
+            'calcurvesmoothed_time': list(calibrationcurve_smoothextrapolation.x.astype(float)),
+            'calcurvesmoothed_value': list(calibrationcurve_smoothextrapolation.y.astype(float))}
 
 def wellfare_parsetecan(data):
     """ Returns a dict containing parsed data
