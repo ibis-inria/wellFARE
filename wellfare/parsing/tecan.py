@@ -218,7 +218,6 @@ def parse_label(sheet,i, wells_dict,  start_time=0,
             yy[yy == 'OVER'] = over_replace
 
 
-            print(j,tt.shape,yy.shape)
             curve = Curve(tt.astype(float), yy.astype(float))
 
             if not (label in wells_dict[well].keys()):
