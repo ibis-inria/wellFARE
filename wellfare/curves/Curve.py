@@ -697,7 +697,10 @@ class Curve:
         if keep_xspan:
             xmin, xmax = self.xlim()
             new_x = new_x[(new_x >= xmin) & (new_x <= xmax)]
-        return Curve(new_x, self(new_x))
+        return Curve(new_x, self(new_x),
+                     left_value=self.left_value,
+                     right_value=self.right_value,
+                     interpolation=self.interpolation)
 
     #=================================================================
     # OPERATIONS ON SEVERAL CURVES
