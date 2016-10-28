@@ -161,6 +161,24 @@ class Curve:
         return self.interpolator(tt)
 
 
+    def __getitem__(self, ind):
+        """Return a ndarray or a Curve depending on the number of indices given.
+        Currently does not support boolean indexing.
+
+        Examples
+        --------
+        a = Curve(range(10), range(10))
+        a[1]
+        >>> array(1,1)
+        a[2:5]
+        >>> <__main__.Curve at 0x7f27f46cd358>
+        a[2:5].xy,
+        >>> array([[2, 2], [3, 3], [4, 4]])
+        """
+        try:
+            return Curve(self.x[ind], self.y[ind])
+        except (ValueError, TypeError):
+            return np.hstack([self.x[ind], self.y[ind]])
 
     # =================================================================
     # PROPERTIES OF THE CURVE
