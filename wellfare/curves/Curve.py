@@ -686,22 +686,37 @@ class Curve:
 
 
     @outplace
-    def crop(self, xmin=None,xmax=None):
+    def crop(self, xmin=None, xmax=None, preserve_points=False):
         """ Removes all measurements taken before xmin or after xmax.
+
+        Parameters
+        ----------
+        xmin: float (default: None)
+        xmax: float (default: None)
+        preserve_points: bool (default: False)
+            When set to True, this parameter preserves the original data points
+            (it does not add xmin and xmax to the data values of the curve).
+            By default, xmin and xmax will be added as new data points.
+
         """
 
         xx = self.x
         if (xmin is None) or (xmin <= xx[0]):
-            xmin= xx[0]
+            xmin = xx[0]
 
         if (xmax is None) or (xmax >= xx[-1]):
-            xmax= xx[-1]
+            xmax = xx[-1]
 
         x2 = xx[(xx >= xmin) & (xx <= xmax)]
         y2 = self(x2)
 
-        new_x = np.hstack([[xmin],x2,[xmax]])
-        new_y = np.hstack([[self(xmin)],y2,[self(xmax)]])
+        if preserve_points:
+            new_x = x2
+            new_y = y2
+        else:
+            new_x = np.hstack([[xmin],x2,[xmax]])
+            new_y = np.hstack([[self(xmin)],y2,[self(xmax)]])
+
         self.x =  new_x
         self.y =  new_y
 
