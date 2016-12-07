@@ -118,7 +118,7 @@ def filter_outliers(curve, percentile_above=100, percentile_below=100,
     return curve.filter(fl)
 
 
-def calibration_curve(abscurve, fluocurve):
+def calibration_curve(abscurve, fluocurve, smoothing, extrapoldistance, validinterval):
     """ Return raw and smoothed (polyfited) calibration curve for a background well. (Fluo = f(Abs))
 
     """
@@ -135,13 +135,29 @@ def calibration_curve(abscurve, fluocurve):
     absinterp = absinterp[nonanargs]
     autofluo = autofluo[nonanargs]
 
+    rawcalibrationcurve = Curve(absinterp, autofluo)
+
+    #keep valid interval data
+    if (validinterval == None) or (not isinstance(validinterval,list)):
+        validinterval = [None,None]
+    if validinterval[0] == None:
+        validinterval[0] = np.min(absinterp)
+    if validinterval[1] == None:
+        validinterval[1] = np.max(absinterp)
+
+    validindexes = np.where(np.logical_and(absinterp>=validinterval[0],absinterp<=validinterval[1]))
+    absinterp = absinterp[validindexes]
+    autofluo = autofluo[validindexes]
+
     #smoothing
+    if smoothing == None:
+        smoothing = 10
     calibrationcurve = Curve(absinterp, autofluo)
-    smoothedcalcurve = calibrationcurve.smooth_sg(1000,20,3)
+    smoothedcalcurve = calibrationcurve.smooth_sg(1000,smoothing,3)
 
     #extrapolate
     spline = UnivariateSpline(smoothedcalcurve.x, smoothedcalcurve.y, k=1)
-    extrapoldistance = (absinterp.max()-absinterp.min())/10
+    #extrapoldistance = (absinterp.max()-absinterp.min())/10
     extendedabs = np.linspace(absinterp.min() - extrapoldistance,absinterp.max() + extrapoldistance,1000)
 
-    return [calibrationcurve,Curve(extendedabs, spline(extendedabs))]
+    return [rawcalibrationcurve,Curve(extendedabs, spline(extendedabs))]

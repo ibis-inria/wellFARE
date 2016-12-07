@@ -12,7 +12,7 @@ from .ILM import (infer_growth_rate,
                   infer_synthesis_rate,
                   infer_prot_conc_onestep,
                   infer_prot_conc_multistep)
-                  
+
 from .preprocessing import filter_outliers, calibration_curve
 
 from .parsing import parse_tecan, merge_wells_dicts
@@ -85,17 +85,17 @@ def wellfare_growth(data):
                     data['values_volume'])
 
     check_noNaN(curve_v.y, "curve_v.y", "wellfare_growth")
-    
+
     n_control_points = get_var_with_default(data, 'n_control_points')
     ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
-    
+
     print("Starting computations")
     alphas = 10.0**np.linspace(-5,8,1000)
     growth, volume, _, _, _ = infer_growth_rate(curve_v, ttu,
                                                 alphas=alphas, eps_L=1e-6)
     print("finished computations")
     check_noNaN(growth.y, "growth.y", "wellfare_growth")
-    
+
     return {'times_growth_rate': list(growth.x.astype(float)),
             'values_growth_rate': list(growth.y.astype(float))}
 
@@ -103,10 +103,10 @@ def wellfare_growth(data):
 
 def wellfare_activity(data):
     """ Computes protein synthesis rate, or promoter activity,
-    using a simple one-step model for the GFP synthesis. 
+    using a simple one-step model for the GFP synthesis.
 
     Command : 'activity'
-    
+
     Input:
       { 'times_volume': [...] ,
         'values_volume': [...],
@@ -189,16 +189,16 @@ def wellfare_concentration(data):
     """
 
 
-    curve_v = Curve( data['times_volume'], 
+    curve_v = Curve( data['times_volume'],
                      data['values_volume'])
     curve_f = Curve( data['times_fluo'],
                      data['values_fluo'])
     dR = data['dR']
     dP = data['dP']
-    
+
     n_control_points = get_var_with_default(data, 'n_control_points')
     ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
-    
+
     if 'kR' in data:
         # use a two-step model of reporter expression
         # if no dRNA provided it is supposed to be very short-lived so that
@@ -229,7 +229,7 @@ def wellfare_concentration(data):
 
 def wellfare_outliers(data):
     """ Removes outliers from a curve.
-    
+
 
     Command: 'outliers'
 
@@ -255,8 +255,8 @@ def wellfare_outliers(data):
     SUMMARY OF THE PARAMETERS
     --------------------------
 
-    percentile_above -> 1-100, proportion of up-lying points to keep 
-    percentile_below -> 1-100, proportion of up-lying points to keep 
+    percentile_above -> 1-100, proportion of up-lying points to keep
+    percentile_below -> 1-100, proportion of up-lying points to keep
     niter_above -> Number of times the up-filter is repeated
     niter_below -> Number of times the down-filter is repeated
     goal_above -> the algo will stop when second derivatives are below
@@ -291,7 +291,7 @@ def wellfare_outliers(data):
     'above_first':False
 
     """
-    
+
     curve = Curve(data.pop('times_curve'),
                   data.pop('values_curve'))
 
@@ -341,7 +341,7 @@ def wellfare_synchronize(data):
 
     time_shift = curve_1.find_shift_gradient([curve_2], tt,
                                            shifts0 = shifts0)[0]
-    
+
     return {'time_shift': time_shift}
 
 
@@ -354,7 +354,7 @@ def wellfare_subtract(data):
     the times of the curve ``curve1``.
     The values of the returned curve are computed using linear
     interpolation when necessary.
-    
+
     Command: subtract
 
     Input:
@@ -372,10 +372,10 @@ def wellfare_subtract(data):
                     data['values_curve_1'])
     curve_2 = Curve(data['times_curve_2'],
                     data['values_curve_2'])
-    
+
     subtraction = (curve_1 - curve_2)
     new_x = np.array([x for x in curve_1.x if x in subtraction.x])
-    
+
     return { 'times_subtraction': list(new_x),
              'values_subtraction': list(subtraction(new_x)) }
 
@@ -403,7 +403,7 @@ def wellfare_calibrationcurve(data):
     fluocurve = Curve(data['fluo_time'],
                     data['fluo_value'])
 
-    calibrationcurve, calibrationcurve_smoothextrapolation = calibration_curve(abscurve,fluocurve)
+    calibrationcurve, calibrationcurve_smoothextrapolation = calibration_curve(abscurve,fluocurve,data['smoothing'],data['extrapoldistance'],data['validinterval'])
 
     return {'calcurve_time': list(calibrationcurve.x.astype(float)),
             'calcurve_value': list(calibrationcurve.y.astype(float)),
