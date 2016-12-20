@@ -152,6 +152,12 @@ def calibration_curve(abscurve, fluocurve, smoothing, extrapoldistance, validint
     #smoothing
     if smoothing == None:
         smoothing = 10
+    if smoothing > absinterp.shape[0] :
+        print("smothing parameter too big")
+        smoothing = absinterp.shape[0]
+
+    print("TEST",absinterp.shape,autofluo.shape,smoothing)
+
     calibrationcurve = Curve(absinterp, autofluo)
     smoothedcalcurve = calibrationcurve.smooth_sg(1000,smoothing,3)
 
