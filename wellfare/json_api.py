@@ -9,7 +9,8 @@ import numpy as np
 from .curves import Curve
 
 from .ILM import (infer_growth_rate,
-                  infer_synthesis_rate,
+                  infer_synthesis_rate_onestep,
+                  infer_synthesis_rate_multistep,
                   infer_prot_conc_onestep,
                   infer_prot_conc_multistep)
 
@@ -73,6 +74,7 @@ def wellfare_growth(data):
       { 'times_volume': [...] ,
         'values_volume': [...],
         'n_control_points': 100 // optional, 100 is default
+        'positive' : boolean
        }
 
     Output :
@@ -84,6 +86,10 @@ def wellfare_growth(data):
     curve_v = Curve(data['times_volume'],
                     data['values_volume'])
 
+    positive = False
+    if 'positive' in data:
+        positive = data['positive']
+
     check_noNaN(curve_v.y, "curve_v.y", "wellfare_growth")
 
     n_control_points = get_var_with_default(data, 'n_control_points')
@@ -92,7 +98,7 @@ def wellfare_growth(data):
     print("Starting computations")
     alphas = 10.0**np.linspace(-5,8,1000)
     growth, volume, _, _, _ = infer_growth_rate(curve_v, ttu,
-                                                alphas=alphas, eps_L=1e-6)
+                                                alphas=alphas, eps_L=1e-6, positive=positive)
     print("finished computations")
     check_noNaN(growth.y, "growth.y", "wellfare_growth")
 
@@ -139,12 +145,15 @@ def wellfare_activity(data):
     n_control_points = get_var_with_default(data, 'n_control_points')
     ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
 
+
     if 'kR' in data:
         # use a two-step model of reporter expression
         # if no dRNA provided it is supposed to be very short-lived so that
         # the transcription step won't impact the dynamics of gene expression
-        dRNA = data.get('dRNA', 1.0)
-        synth_rate, _, _, _, _ = infer_promact(
+        dRNA = get_var_with_default(data, 'dRNA')
+        kR = data['kR']
+        print("ACTIVITY TWO STEP",kR,dRNA)
+        synth_rate, _, _, _, _ = infer_synthesis_rate_multistep(
             curve_v=curve_v,
             curve_f=curve_f,
             ttu = ttu,
@@ -154,7 +163,8 @@ def wellfare_activity(data):
 
     else:
         # use a one-step model of reporter expression
-        synth_rate, _, _, _, _ = infer_synthesis_rate(
+        print("ACTIVITY ONE STEP")
+        synth_rate, _, _, _, _ = infer_synthesis_rate_onestep(
             curve_v=curve_v,
             curve_f=curve_f,
             ttu = ttu,
