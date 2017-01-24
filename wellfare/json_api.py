@@ -22,6 +22,10 @@ from .parsing import parse_tecan, merge_wells_dicts
 DEFAULTS = {
     'n_control_points':100,
     'dRNA': 1.0,
+    'eps_L' : 0.0001,
+    'alphalow' : -10,
+    'alphahigh' : 10,
+    'nalphastep' : 1000,
 }
 def get_var_with_default(data, var):
     if var in data:
@@ -75,6 +79,10 @@ def wellfare_growth(data):
         'values_volume': [...],
         'n_control_points': 100 // optional, 100 is default
         'positive' : boolean
+        'alphalow' : -10,
+        'alphahigh' : 10,
+        'nalphastep' : 1000,
+        'eps_L' : 0.000001
        }
 
     Output :
@@ -95,10 +103,18 @@ def wellfare_growth(data):
     n_control_points = get_var_with_default(data, 'n_control_points')
     ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
 
+
+    eps_L = get_var_with_default(data, 'eps_L')
+    alphalow = get_var_with_default(data, 'alphalow')
+    alphahigh = get_var_with_default(data, 'alphahigh')
+    nalphastep = get_var_with_default(data, 'nalphastep')
+    alphas = np.logspace(alphalow,alphahigh,nalphastep)
+
     print("Starting computations")
-    alphas = 10.0**np.linspace(-5,8,1000)
+    print(alphalow,alphahigh,nalphastep)
+    print(eps_L,n_control_points)
     growth, volume, _, _, _ = infer_growth_rate(curve_v, ttu,
-                                                alphas=alphas, eps_L=1e-6, positive=positive)
+                                                alphas=alphas, eps_L=eps_L, positive=positive)
     print("finished computations")
     check_noNaN(growth.y, "growth.y", "wellfare_growth")
 
@@ -121,7 +137,11 @@ def wellfare_activity(data):
         'dR': float, // degradation constant of the reporter
         'kR': float // (optional) folding constant of the reporter.
         'dRNA': float // (optional) degradation constant of the RNA.
-        'n_control_points':100 // 100 is the default
+        'n_control_points':100, // 100 is the default
+        'alphalow' : -10,
+        'alphahigh' : 10,
+        'nalphastep' : 1000,
+        'eps_L' : 0.000001
        }
 
     Output:
@@ -137,14 +157,16 @@ def wellfare_activity(data):
 
     dR = data['dR']
 
-    if 'send_state' in data:
-        send_state = data['send_state']
-    else:
-        send_state = None;
-
     n_control_points = get_var_with_default(data, 'n_control_points')
     ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
 
+    eps_L = get_var_with_default(data, 'eps_L')
+    alphalow = get_var_with_default(data, 'alphalow')
+    alphahigh = get_var_with_default(data, 'alphahigh')
+    nalphastep = get_var_with_default(data, 'nalphastep')
+    alphas = np.logspace(alphalow,alphahigh,nalphastep)
+
+    print('Activity',eps_L,alphalow,alphahigh,nalphastep,n_control_points)
 
     if 'kR' in data:
         # use a two-step model of reporter expression
@@ -159,7 +181,9 @@ def wellfare_activity(data):
             ttu = ttu,
             drna = dRNA,
             kr = kR,
-            dR=dR)
+            dR=dR,
+            alphas=alphas,
+            eps_L=eps_L)
 
     else:
         # use a one-step model of reporter expression
@@ -169,7 +193,8 @@ def wellfare_activity(data):
             curve_f=curve_f,
             ttu = ttu,
             degr=dR,
-            send_state = send_state)
+            alphas=alphas,
+            eps_L=eps_L)
 
     return {'times_activity': list(synth_rate.x.astype(float)),
             'values_activity': list(synth_rate.y.astype(float))}
@@ -189,7 +214,11 @@ def wellfare_concentration(data):
         'values_fluo: [...],
         'dR': float,
         'dP': float,
-        'n_control_points': 100 // optional, 100 is default
+        'n_control_points': 100, // optional, 100 is default
+        'alphalow' : -10,
+        'alphahigh' : 10,
+        'nalphastep' : 1000,
+        'eps_L' : 0.000001
        }
 
     Output:
@@ -209,6 +238,14 @@ def wellfare_concentration(data):
     n_control_points = get_var_with_default(data, 'n_control_points')
     ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
 
+    eps_L = get_var_with_default(data, 'eps_L')
+    alphalow = get_var_with_default(data, 'alphalow')
+    alphahigh = get_var_with_default(data, 'alphahigh')
+    nalphastep = get_var_with_default(data, 'nalphastep')
+    alphas = np.logspace(alphalow,alphahigh,nalphastep)
+
+    print('Concentration',eps_L,alphalow,alphahigh,nalphastep,n_control_points)
+
     if 'kR' in data:
         # use a two-step model of reporter expression
         # if no dRNA provided it is supposed to be very short-lived so that
@@ -222,13 +259,17 @@ def wellfare_concentration(data):
             drna= dRNA,
             kr=kR,
             dR=dR,
-            dP=dP)
+            dP=dP,
+            alphas=alphas,
+            eps_L=eps_L)
     else:
         concentration, _, _, _, _ = infer_prot_conc_onestep(
             curve_v=curve_v,
             curve_f=curve_f,
             ttu = ttu,
-            dR=dR, dP = dP)
+            dR=dR, dP = dP,
+            alphas=alphas,
+            eps_L=eps_L)
 
     return {'times_concentration': list(concentration.x.astype(float)),
             'values_concentration': list(concentration.y.astype(float))}
