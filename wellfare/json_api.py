@@ -90,7 +90,7 @@ def wellfare_growth(data):
         'values_growth_rate': [...]
        }
     """
-    print("Starting ---")
+
     curve_v = Curve(data['times_volume'],
                     data['values_volume'])
 
@@ -110,12 +110,9 @@ def wellfare_growth(data):
     nalphastep = get_var_with_default(data, 'nalphastep')
     alphas = np.logspace(alphalow,alphahigh,nalphastep)
 
-    print("Starting computations")
-    print(alphalow,alphahigh,nalphastep)
-    print(eps_L,n_control_points)
     growth, volume, _, _, _ = infer_growth_rate(curve_v, ttu,
                                                 alphas=alphas, eps_L=eps_L, positive=positive)
-    print("finished computations")
+
     check_noNaN(growth.y, "growth.y", "wellfare_growth")
 
     return {'times_growth_rate': list(growth.x.astype(float)),
@@ -166,15 +163,12 @@ def wellfare_activity(data):
     nalphastep = get_var_with_default(data, 'nalphastep')
     alphas = np.logspace(alphalow,alphahigh,nalphastep)
 
-    print('Activity',eps_L,alphalow,alphahigh,nalphastep,n_control_points)
-
     if 'kR' in data:
         # use a two-step model of reporter expression
         # if no dRNA provided it is supposed to be very short-lived so that
         # the transcription step won't impact the dynamics of gene expression
         dRNA = get_var_with_default(data, 'dRNA')
         kR = data['kR']
-        print("ACTIVITY TWO STEP",kR,dRNA)
         synth_rate, _, _, _, _ = infer_synthesis_rate_multistep(
             curve_v=curve_v,
             curve_f=curve_f,
@@ -187,7 +181,6 @@ def wellfare_activity(data):
 
     else:
         # use a one-step model of reporter expression
-        print("ACTIVITY ONE STEP")
         synth_rate, _, _, _, _ = infer_synthesis_rate_onestep(
             curve_v=curve_v,
             curve_f=curve_f,
@@ -243,8 +236,6 @@ def wellfare_concentration(data):
     alphahigh = get_var_with_default(data, 'alphahigh')
     nalphastep = get_var_with_default(data, 'nalphastep')
     alphas = np.logspace(alphalow,alphahigh,nalphastep)
-
-    print('Concentration',eps_L,alphalow,alphahigh,nalphastep,n_control_points)
 
     if 'kR' in data:
         # use a two-step model of reporter expression
