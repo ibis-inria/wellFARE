@@ -28,7 +28,6 @@ from .methods import DEFAULT_ALPHAS, infer_control
 from scipy.integrate import odeint
 import numpy as np
 
-#@profile
 def infer_growth_rate(curve_v, ttu, alphas=None, eps_L=.0001, positive=False):
     """
     Parameters
@@ -102,10 +101,9 @@ def infer_growth_rate(curve_v, ttu, alphas=None, eps_L=.0001, positive=False):
 
 
 
-#@profile
 def infer_synthesis_rate_onestep(curve_f, curve_v, ttu, degr,
                        alphas=None, eps_L=.0001, positive=False,
-                       variances=None, send_state=None):
+                       variances=None):
     """
 
 
@@ -174,14 +172,13 @@ def infer_synthesis_rate_onestep(curve_f, curve_v, ttu, degr,
     activity, fluo_smooth, ic, alpha, ascores = \
         infer_control(H, y= curve_f.y, Nic= 1, alphas= alphas,
                       eps_L = eps_L, positive_solution=positive,
-                      variances=variances, send_state=send_state)
+                      variances=variances)
 
     return ( Curve(ttu, activity),
              Curve(tt_fluo, fluo_smooth),
              ic, alpha, ascores )
 
 
-#@profile
 def infer_prot_conc_onestep(curve_f, curve_v, ttu, dR, dP,
                       alphas=None, eps_L=0.0001, positive=False):
     """ Retrieves the concentration of a protein P, given

@@ -92,8 +92,7 @@ def make_L(Nu, Nic, eps_L=.001):
         L[i+1,i] = -1
     return L
 
-#@profile
-def GCV(y, H, alphas , Qv=None, optimize=False, send_state=None):
+def GCV(y, H, alphas , Qv=None, optimize=False):
     """ Generalized Cross-Validation.
     
     Finds the right regularization parameter alpha
@@ -146,16 +145,13 @@ def GCV(y, H, alphas , Qv=None, optimize=False, send_state=None):
     alphas = [a for a in alphas if (-a) not in vv]
 
 
-    #@profile
     def Gy(alpha):
         return Q.dot( Qy.T / (vv + alpha))
 
-    #@profile
     def diag_G(alpha):
         v_prime = 1.0 / (vv + alpha)
         return (v_prime * Q2).sum(axis=-1)
 
-    #@profile
     def looe(alpha):
         """ Leave-one-out mean error for alpha """
         errs = Gy(alpha) / diag_G(alpha)
@@ -163,13 +159,7 @@ def GCV(y, H, alphas , Qv=None, optimize=False, send_state=None):
 
     alphas_scores = []
 
-    if send_state != None:
-        percentstep = 10
-        nalphastep = len(alphas)/percentstep
-
     for i,a in enumerate(alphas):
-        if (send_state != None) and (i%nalphastep == 0) :
-            send_state(min(i/len(alphas)*100,99))
         alphas_scores.append(looe(a))
     
     best_alpha = alphas[np.argmin(alphas_scores)]
@@ -182,9 +172,8 @@ def GCV(y, H, alphas , Qv=None, optimize=False, send_state=None):
     return best_alpha, best_x, alphas_scores
 
 
-#@profile
 def infer_control(H, y, Nic, alphas=None, eps_L=.0001, positive_solution=False,
-                  variances=None, send_state=None):
+                  variances=None):
     """ Infers a control with a smoothness penalty.
     
     
@@ -243,7 +232,7 @@ def infer_control(H, y, Nic, alphas=None, eps_L=.0001, positive_solution=False,
         if not CVXOPT_FOUND:
             raise ValueError ("Install cvxopt for positive solutions. ")
         if hasattr(alphas, '__iter__'):
-            alpha, v, scores  = GCV(y, HiL, alphas, Qv = (Q,vv) , send_state=send_state)
+            alpha, v, scores  = GCV(y, HiL, alphas, Qv = (Q,vv))
         else:
             alpha, scores = alphas, None
 
@@ -257,11 +246,10 @@ def infer_control(H, y, Nic, alphas=None, eps_L=.0001, positive_solution=False,
         return uu, yyhat, ic, alpha, scores
     
     # Non-positive solutions
-    #@profile
     def treat_y(y):
         """ GCV on one observation vector """
         if hasattr(alphas, '__iter__'):
-            alpha, v, scores  = GCV(y, HiL, alphas, Qv = (Q,vv) , send_state=send_state)
+            alpha, v, scores  = GCV(y, HiL, alphas, Qv = (Q,vv))
         else:
             alpha, v, scores = alphas, None, None 
         
