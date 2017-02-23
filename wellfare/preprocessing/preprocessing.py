@@ -75,12 +75,11 @@ def remove_bumps(curve, side, percentile=50, niter=1, goal=0):
     return Curve(xx,yy)
 
 
-#@profile
 def filter_outliers(curve, percentile_above=100, percentile_below=100,
                              niter_above=1, niter_below=1,
                              goal_above=0, goal_below = 0,
                              smoothing_win = 4, nstd=1,
-                             above_first = True, send_state = None):
+                             above_first = True):
     """ Removes the ouliers in a curve.
 
     This is done in 4 steps: first, bumps are removed
@@ -105,15 +104,9 @@ def filter_outliers(curve, percentile_above=100, percentile_below=100,
 
     curve_s = curve_f.diff_win(0, win=smoothing_win)
 
-    if send_state != None:
-        send_state(30)
-
     curve_std = (curve_f - curve_s).fy(abs).diff_win(
                                             0,win=smoothing_win)
     fl = lambda x,y : abs(y-curve_s(x))<= nstd*curve_std(x)
-
-    if send_state != None:
-        send_state(70)
 
     return curve.filter(fl)
 
