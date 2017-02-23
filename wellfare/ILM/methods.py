@@ -157,10 +157,7 @@ def GCV(y, H, alphas , Qv=None, optimize=False):
         errs = Gy(alpha) / diag_G(alpha)
         return (errs**2).mean()
 
-    alphas_scores = []
-
-    for i,a in enumerate(alphas):
-        alphas_scores.append(looe(a))
+    alphas_scores = [looe(a) for a in alphas]
     
     best_alpha = alphas[np.argmin(alphas_scores)]
 
