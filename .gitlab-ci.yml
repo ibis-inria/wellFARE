@@ -1,4 +1,0 @@
-production:
-  only:
-    - master
-    - /^deploy-.*$/
