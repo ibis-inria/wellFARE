@@ -17,7 +17,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):	
         self.send_response(200, "ok")
         self.send_header('Access-Control-Allow-Credentials', 'true')
-        self.send_header('Access-Control-Allow-Origin', "http://localhost")#'http://iae-spring.upmf-grenoble.fr') # needs to be changed
+        self.send_header('Access-Control-Allow-Origin', "*")#'http://iae-spring.upmf-grenoble.fr') # needs to be changed
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
         self.send_header("Access-Control-Allow-Headers", "X-Requested-With, Content-type")
 	
@@ -42,7 +42,7 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
                 # send results to client
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', "http://localhost")#'http://iae-spring.upmf-grenoble.fr')			
+            self.send_header('Access-Control-Allow-Origin', "*")#'http://iae-spring.upmf-grenoble.fr')
             self.end_headers()
 
             json_output_data = json.dumps(output_data)
