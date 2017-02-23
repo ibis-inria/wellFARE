@@ -81,7 +81,7 @@ def infer_growth_rate(curve_v, ttu, alphas=None, eps_L=.0001, positive=False):
     ttv = curve_v.x
     dttu = 1.0*(ttu[1]-ttu[0])
 
-    H_ic = np.ones((len(ttv),1.0))
+    H_ic = np.ones((len(ttv),1))
 
     # dT is a Ny x Nu matrix with
     # dT[i,j] = ttv[i] - ttu[j]

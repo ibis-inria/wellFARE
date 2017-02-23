@@ -44,6 +44,7 @@ from copy import deepcopy
 import decorator
 
 import numpy as np
+from math import floor
 from scipy.interpolate import interp1d
 from scipy.optimize import curve_fit, fmin
 from scipy.integrate import odeint
@@ -407,11 +408,11 @@ class Curve:
         the measure
         """
         res = []
-        l,r = (win/2,win/2) if sym else (0,win)
+        l,r = (floor(win/2),floor(win/2)) if sym else (0,win)
         lx = len(self.x)
         for i in range(0,lx):
-            x = self.x[max(0,i-l) : min(lx, i+r)] -  self.x[i]
-            y = self.y[max(0,i-l) : min(lx, i+r)]
+            x = self.x[max(0, i-l) : min(lx, i+r)] -  self.x[i]
+            y = self.y[max(0, i-l) : min(lx, i+r)]
             coef = np.polyfit(x,y,order)[-(deriv+1)]
             if deriv > 1:
                 coef *= 1.0/np.array(range(1,deriv)).prod()

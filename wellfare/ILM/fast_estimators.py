@@ -64,7 +64,7 @@ def ilp_growth_rate(curve_volume, ttu, alphas=None, eps_L=.0001):
     ttv = curve_volume.x
     dttu = 1.0*(ttu[1]-ttu[0])
     
-    H_ic = np.ones((len(ttv),1.0))
+    H_ic = np.ones((len(ttv),1))
     
     # dT is a Ny x Nu matrix with
     # dT[i,j] = ttv[i] - ttu[j]
