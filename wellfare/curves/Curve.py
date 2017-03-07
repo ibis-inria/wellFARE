@@ -467,10 +467,14 @@ class Curve:
         """
 
         from math import factorial
+        from scipy.signal import savgol_filter
 
         xx = np.linspace(self.x[0], self.x[-1], nx)
         yy = self(xx)
-        rate=1.0
+
+        yy = savgol_filter(yy,window_length=hw*2+1,polyorder=order,deriv=deriv, mode="interp")
+
+        '''rate=1.0
 
         order_range = range(order + 1)
         # precompute coefficients
@@ -478,10 +482,13 @@ class Curve:
         m = np.linalg.pinv(b).A[deriv] * rate ** deriv * factorial(deriv)
         # pad the signal at the extremes with
         # values taken from the signal itself
-        firstvals = yy[0] - np.abs(yy[1:hw + 1][::-1] - yy[0])
-        lastvals = yy[-1] + np.abs(yy[-hw - 1:-1][::-1] - yy[-1])
-        yy = np.concatenate((firstvals, yy, lastvals))
+        firstvals = yy[:hw]
+        lastvals = yy[-hw:]
+        #firstvals = yy[:int(hw/10)+1].mean() - np.abs(yy[1:hw + 1][::-1] - yy[:int(hw/10)+1].mean())
+        #lastvals = yy[-int(hw/10)-1:].mean() + np.abs(yy[-hw - 1:-1][::-1] - yy[-int(hw/10)-1:].mean())
         yy = np.convolve(m[::-1], yy, mode='valid')
+        yy = np.concatenate((firstvals, yy, lastvals))
+        '''
 
         return Curve(xx, yy)
 

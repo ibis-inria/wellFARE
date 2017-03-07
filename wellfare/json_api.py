@@ -14,7 +14,7 @@ from .ILM import (infer_growth_rate,
                   infer_prot_conc_onestep,
                   infer_prot_conc_multistep)
 
-from .preprocessing import filter_outliers, calibration_curve
+from .preprocessing import filter_outliers, filter_outliersnew, calibration_curve
 
 from .parsing import parse_tecan, merge_wells_dicts
 
@@ -22,7 +22,7 @@ from .parsing import parse_tecan, merge_wells_dicts
 DEFAULTS = {
     'n_control_points':100,
     'dRNA': 1.0,
-    'eps_L' : 0.0001,
+    'eps_L' : 0.000001,
     'alphalow' : -10,
     'alphahigh' : 10,
     'nalphastep' : 1000,
@@ -56,6 +56,7 @@ def json_process(command, input_data):
             'activity': wellfare_activity,
             'concentration': wellfare_concentration,
             'outliers': wellfare_outliers,
+            'outliersnew': wellfare_outliersnew,
             'synchronize': wellfare_synchronize,
             'subtract': wellfare_subtract,
             'calibrationcurve': wellfare_calibrationcurve,
@@ -343,7 +344,36 @@ def wellfare_outliers(data):
     return { 'times_cleaned_curve': list(cleaned_curve.x.astype(float)),
              'values_cleaned_curve': list(cleaned_curve.y.astype(float)) }
 
+def wellfare_outliersnew(data):
+    """ Removes outliers from a curve using smooting spline.
 
+    Command: 'outliersnew'
+
+    Input:
+      {
+        'smoothing_win': int,
+        'nstd': int/float,
+        'iterations'= int,
+      }
+
+    Output:
+      { 'times_cleaned_curve': [...],
+        'values_cleaned_curve': [...]}
+
+    SUMMARY OF THE PARAMETERS
+    --------------------------
+    smoothing_win -> window size (the more, the smoother)
+    nstd -> Keep points that are less than "nstd*std" from the smooth.
+    iterations --> number of time to do the smoothing and cut off using nstd
+    """
+
+    curve = Curve(data.pop('times_curve'),
+                  data.pop('values_curve'))
+
+    cleaned_curve = filter_outliersnew(curve, **data)
+
+    return { 'times_cleaned_curve': list(cleaned_curve.x.astype(float)),
+             'values_cleaned_curve': list(cleaned_curve.y.astype(float)) }
 
 def wellfare_synchronize(data):
     """ Returns the lag between two curves.
@@ -451,6 +481,8 @@ def wellfare_calibrationcurve(data):
             'calcurve_value': list(calibrationcurve.y.astype(float)),
             'calcurvesmoothed_time': list(calibrationcurve_smoothextrapolation.x.astype(float)),
             'calcurvesmoothed_value': list(calibrationcurve_smoothextrapolation.y.astype(float))}
+
+
 
 def wellfare_parsetecan(data):
     """ Returns a dict containing parsed data

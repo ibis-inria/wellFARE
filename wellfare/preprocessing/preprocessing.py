@@ -160,3 +160,37 @@ def calibration_curve(abscurve, fluocurve, smoothing, extrapoldistance, validint
     extendedabs = np.linspace(absinterp.min() - extrapoldistance,absinterp.max() + extrapoldistance,1000)
 
     return [rawcalibrationcurve,Curve(extendedabs, spline(extendedabs))]
+
+def filter_outliersnew(curve, outliersnew_smoothing=20, outliersnew_nstd=2, outliersnew_iterations=1, outliersnew_uppenalty=1, outliersnew_downpenalty=1):
+    """ Return outlier free curve using smoothed curve.
+    """
+    if outliersnew_uppenalty == None:
+        outliersnew_uppenalty = 1
+    if outliersnew_downpenalty == None:
+        outliersnew_downpenalty = 1
+
+    for i in range(outliersnew_iterations):
+        #smoothing
+        curvelength = curve.x.shape[0]
+        if outliersnew_smoothing > curvelength :
+            outliersnew_smoothing = curvelength -1
+
+        smoothedcurve = curve.smooth_sg(curvelength,outliersnew_smoothing,3)
+
+        std_cutoff = outliersnew_nstd * (curve - smoothedcurve).y.std()
+        #percent_to_remove = np.percentile(np.abs((curve - smoothedcurve).y),100 - outliersnew_uppenalty)
+        #std_cutoff = min(outliersnew_nstd*curve_std,percent_to_remove)
+        #filter using nstd*std
+        def fl(x,y):
+            dist = y-smoothedcurve(x)
+            if dist > 0:
+                return dist <= std_cutoff * outliersnew_downpenalty #Normalize cutoff with opposite penalty value
+            else:
+                return -dist <= std_cutoff * outliersnew_uppenalty #Normalize cutoff with opposite penalty value
+        #fl = lambda x,y : abs(y-smoothedcurve(x))<= std_cutoff
+
+        curve = curve.filter(fl)
+        if curvelength == curve.x.shape[0]:
+            break
+
+    return curve
