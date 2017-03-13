@@ -13,6 +13,7 @@ import numpy as np
 
 from ..curves import Curve
 
+
 def parse_tecan(filename, sheet_index=None, info=False):
     """ Parses a .xlsx file from a cinetic experiment
 
@@ -22,12 +23,12 @@ def parse_tecan(filename, sheet_index=None, info=False):
     """
     sheets = workbook2numpy(filename, sheet_index=sheet_index)
 
-    if info :
+    if info:
         info_dict = get_info(sheets)
 
     if isinstance(sheets, list):
         starts = map(find_start_in_sheet, sheets)
-        t0 = min([ s for s in starts if (s is not None)])
+        t0 = min([s for s in starts if (s is not None)])
         if info:
             return [[parse_sheet(sheet, t0=t0)[1] for sheet in sheets], info_dict]
         else:
@@ -55,23 +56,25 @@ def get_info(sheets):
     nameindex = 0
     while i < sheet.shape[0]:
         if sheet[i][0].startswith('List of actions'):
-            print("ACTIONS",i)
+            print("ACTIONS", i)
             info_dict["actions"] = []
-            i+=1
+            i += 1
             while not ('Label' in sheet[i][0]):
-                if len(sheet[i][0]) != 0 :
+                if len(sheet[i][0]) != 0:
                     linelist = [var for var in sheet[i] if var]
-                    info_dict["actions"].append([ linelist[0] , ' '.join(linelist[1:]) ])
+                    info_dict["actions"].append(
+                        [linelist[0], ' '.join(linelist[1:])])
                 i += 1
 
         if sheet[i][0].startswith('Mode'):
             print("MODE", i)
             linelist = [var for var in sheet[i] if var]
-            info_dict[modeindex] = [[ linelist[0] , ' '.join(linelist[1:]) ]]
+            info_dict[modeindex] = [[linelist[0], ' '.join(linelist[1:])]]
             i += 1
-            while not (sheet[i][0].startswith('Mode') or len(sheet[i][0]) == 0 or sheet[i][0].startswith('Start Time') ):
+            while not (sheet[i][0].startswith('Mode') or len(sheet[i][0]) == 0 or sheet[i][0].startswith('Start Time')):
                 linelist = [var for var in sheet[i] if var]
-                info_dict[modeindex].append([ linelist[0] , ' '.join(linelist[1:]) ])
+                info_dict[modeindex].append(
+                    [linelist[0], ' '.join(linelist[1:])])
                 i += 1
 
             if len(sheet[i][0]) != 0:
@@ -83,7 +86,7 @@ def get_info(sheets):
             info_dict["Start Time"] = ' '.join(linelist[1:])
 
         if sheet[i][0].startswith('Cycle Nr'):
-            info_dict[nameindex].append(['Name',sheet[i-1][0]])
+            info_dict[nameindex].append(['Name', sheet[i - 1][0]])
             nameindex += 1
 
         i += 1
@@ -110,8 +113,7 @@ def workbook2numpy(filename, sheet_index=None):
             except:
                 pass
 
-    return res[0] if len(res)==1 else res
-
+    return res[0] if len(res) == 1 else res
 
 
 def find_start_in_sheet(sheet):
@@ -123,35 +125,33 @@ def find_start_in_sheet(sheet):
     return None
 
 
-
 def sheet2numpy(sheet):
     """ Conversts a xlread Excel sheet to a numpy array """
-    X,Y = sheet.ncols,  sheet.nrows
-    arr = [[sheet.cell(y,x).value for x in range(X)]
-              for y in range(Y)]
+    X, Y = sheet.ncols,  sheet.nrows
+    arr = [[sheet.cell(y, x).value for x in range(X)]
+           for y in range(Y)]
     return np.array(arr)
 
 
+def parse_sheet(sheet, t0=None):
 
-def parse_sheet(sheet, t0 = None):
-
-    wells_dict = { "%s%d"%(c,i) : dict() for c in "ABCDEFGH"
-                                         for i in range(1,13) }
+    wells_dict = {"%s%d" % (c, i): dict() for c in "ABCDEFGH"
+                  for i in range(1, 13)}
     start_time = 0
-    for i,line in enumerate(sheet):
+    for i, line in enumerate(sheet):
         if len(line) == 0:
             pass
         elif line[0] == "Start Time:":
             start_time = date2seconds(line[1])
             if t0 is None:
                 t0 = start_time
-            start_time = start_time-t0
-            parse_labels(sheet,i, wells_dict, start_time)
+            start_time = start_time - t0
+            parse_labels(sheet, i, wells_dict, start_time)
 
     return t0, wells_dict
 
 
-def parse_labels(sheet,i, wells_dict, start_time):
+def parse_labels(sheet, i, wells_dict, start_time):
     """
     Parses the different labels encountered (and fills the given
     plate until an "End Time:" cell is found.
@@ -159,13 +159,12 @@ def parse_labels(sheet,i, wells_dict, start_time):
     j = i
     while sheet[j][0] != "End Time:":
         if sheet[j][0] == "Cycle Nr.":
-            parse_label(sheet,j, wells_dict,  start_time)
-        j +=1
+            parse_label(sheet, j, wells_dict,  start_time)
+        j += 1
 
 
-
-def parse_label(sheet,i, wells_dict,  start_time=0,
-                timePerWell=True, over_replace = -1,
+def parse_label(sheet, i, wells_dict,  start_time=0,
+                timePerWell=True, over_replace=-1,
                 per_column=False):
     """
     Parses an array of measurements, supposing that
@@ -178,30 +177,30 @@ def parse_label(sheet,i, wells_dict,  start_time=0,
     A2, 0.3980999887, 0.4104000032
     t   02            32
     """
-    label = sheet[i-1,0]
-
+    label = sheet[i - 1, 0]
 
     if per_column:
-        sheet = sheet[i:,:].T
-        i=0
-
+        sheet = sheet[i:, :].T
+        i = 0
 
     try:
         xmax = list(sheet[i]).index(u'') - 1
     except:
         xmax = len(list(sheet[i]))
 
-    if sheet[i+1][1] == '':
-        return #return if the first data element is empty (meaning all data should be empty)
+    if sheet[i + 1][1] == '':
+        # return if the first data element is empty (meaning all data should be
+        # empty)
+        return
 
     if not timePerWell:
         # read the times once and for all
-        tt = sheet[i+1, 1:xmax].astype(float)/60000 + start_time
-        j = i+3
+        tt = sheet[i + 1, 1:xmax].astype(float) / 60000 + start_time
+        j = i + 3
     else:
-        j=i+2
+        j = i + 2
 
-    while (j<sheet.shape[0]) and (sheet[j,0] != u''):
+    while (j < sheet.shape[0]) and (sheet[j, 0] != u''):
 
         try:
             xmax = list(sheet[j]).index(u'') - 1
@@ -209,14 +208,13 @@ def parse_label(sheet,i, wells_dict,  start_time=0,
             xmax = len(list(sheet[j]))
 
         try:
-            well = sheet[j,0]
+            well = sheet[j, 0]
 
             if timePerWell:
-                tt = sheet[j+1, 1:xmax].astype(float)/60000 + start_time
+                tt = sheet[j + 1, 1:xmax].astype(float) / 60000 + start_time
 
-            yy = sheet[j,1:xmax]
+            yy = sheet[j, 1:xmax]
             yy[yy == 'OVER'] = over_replace
-
 
             curve = Curve(tt.astype(float), yy.astype(float))
 
@@ -237,13 +235,13 @@ def merge_wells_dicts(wells_dicts):
     Merges the dictionnaries
     """
 
-    result = { "%s%d"%(c,i) : dict() for c in "ABCDEFGH"
-                                         for i in range(1,13) }
+    result = {"%s%d" % (c, i): dict() for c in "ABCDEFGH"
+              for i in range(1, 13)}
     for wells_dict in wells_dicts:
 
         for well, curves_dict in wells_dict.items():
 
-            for label,curve in curves_dict.items():
+            for label, curve in curves_dict.items():
 
                 if not (label in result[well].keys()):
                     result[well][label] = curve
@@ -255,8 +253,7 @@ def merge_wells_dicts(wells_dicts):
 
 def to_coords(s):
     """ Converts "A5", "C11", ... into (0,5), (2,11) ... """
-    return  ( "ABCDEFGH".index(s[0]), int(s[1:])-1 )
-
+    return ("ABCDEFGH".index(s[0]), int(s[1:]) - 1)
 
 
 def date2seconds(timeString):
@@ -265,8 +262,8 @@ def date2seconds(timeString):
     into seconds since 1970/1/1
     """
     template = "(\d+)/(\d+)/(\d+) (\d+):(\d+):(\d+)"
-    matching = re.match(template,timeString)
-    day,mth,yr,hr,mn,sec = map(int,matching.groups())
-    t1 = datetime.datetime(yr,mth,day,hr,mn,sec)
-    t0 = datetime.datetime(1970,1,1)
-    return (t1-t0).total_seconds()
+    matching = re.match(template, timeString)
+    day, mth, yr, hr, mn, sec = map(int, matching.groups())
+    t1 = datetime.datetime(yr, mth, day, hr, mn, sec)
+    t0 = datetime.datetime(1970, 1, 1)
+    return (t1 - t0).total_seconds()

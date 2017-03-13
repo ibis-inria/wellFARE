@@ -7,7 +7,6 @@ the gene of interest are modeled as multistep processes.
 """
 
 
-
 import numpy as np
 import scipy
 
@@ -20,12 +19,9 @@ from scipy.integrate import odeint
 # for the number of reporter protein and protein of interest.
 
 
-
-
 # Observation "matrices"
 obs_R = np.array([0, 0, 1])
 obs_P = np.array([0, 1])
-
 
 
 # === Helper functions ==========================================
@@ -47,24 +43,23 @@ def make_H(model, obs, ttu, tty):
         a[i] = 1.0
         return a
 
-
-    unull = lambda t:0
-    tt = tty-ttu[0]
+    def unull(t): return 0
+    tt = tty - ttu[0]
     Hic = np.vstack([odeint(model, canon(i), tt, args=(unull,)).dot(obs)
-                     for i in range(nvars)] ).T
+                     for i in range(nvars)]).T
 
     dT = np.array([tty]).T - ttu
 
     dTf = dT.flatten()
 
-    tt_sorted  = np.sort(list( set( dTf[dTf>=0] ) ))
+    tt_sorted = np.sort(list(set(dTf[dTf >= 0])))
 
-    u0 = Curve( [ttu[0], ttu[1]] , [1.0, 1.0] )
+    u0 = Curve([ttu[0], ttu[1]], [1.0, 1.0])
     u0.left_value = u0.right_value = 0.0
-    yy = odeint(model, nvars*[0.0], tt_sorted, args=(u0,)).dot(obs)
+    yy = odeint(model, nvars * [0.0], tt_sorted, args=(u0,)).dot(obs)
 
-    D = dict(zip(tt_sorted,yy))
-    values = [ D.get(t,0) for t in dTf]
+    D = dict(zip(tt_sorted, yy))
+    values = [D.get(t, 0) for t in dTf]
     Hu = np.array(values).reshape(dT.shape)
 
     H = np.hstack([Hic, Hu])
@@ -75,7 +70,7 @@ def make_H(model, obs, ttu, tty):
 
 
 def infer_synthesis_rate_multistep(curve_f, curve_v, ttu, drna, kr, dR,
-                  alphas=None, eps_L=.0001):
+                                   alphas=None, eps_L=.0001):
     """
 
     Model:
@@ -121,7 +116,7 @@ def infer_synthesis_rate_multistep(curve_f, curve_v, ttu, drna, kr, dR,
     """
 
     if alphas is None:
-      alphas = DEFAULT_ALPHAS
+        alphas = DEFAULT_ALPHAS
 
     def model_VR(Y, t, promact):
         """
@@ -131,30 +126,25 @@ def infer_synthesis_rate_multistep(curve_f, curve_v, ttu, drna, kr, dR,
         """
         kM = kru = 1.0
         Rrna, Ri, R = Y
-        return [ kM*promact(t) - drna * Rrna,
-                 kru*Rrna - (dR+kr) * Ri,
-                 kr * Ri - dR * R ]
-
-
-
+        return [kM * promact(t) - drna * Rrna,
+                kru * Rrna - (dR + kr) * Ri,
+                kr * Ri - dR * R]
 
     tt_fluo = curve_f.x
     ttu = tt_fluo[:-1]
-    dttu = ttu[1]-ttu[0]
-    H_F = make_H( model_VR, obs_R, ttu, tt_fluo )
-    H_F[:,len(obs_R):] *= curve_v(ttu+.5*dttu)
+    dttu = ttu[1] - ttu[0]
+    H_F = make_H(model_VR, obs_R, ttu, tt_fluo)
+    H_F[:, len(obs_R):] *= curve_v(ttu + .5 * dttu)
 
-    synth_rate, fluo_smooth , ic, alpha, ascores = infer_control(
-               H_F, curve_f.y, Nic=3, alphas=alphas, eps_L=1e-6)
+    synth_rate, fluo_smooth, ic, alpha, ascores = infer_control(
+        H_F, curve_f.y, Nic=3, alphas=alphas, eps_L=1e-6)
 
     return (Curve(ttu, synth_rate), Curve(tt_fluo, fluo_smooth),
             ic, alpha, ascores)
 
 
-
-
 def infer_prot_conc_multistep(curve_f, curve_v, ttu, drna, kr, dR,
-                    dP, alphas=None, eps_L=0.0001):
+                              dP, alphas=None, eps_L=0.0001):
     """ Retrieves the concentration of a protein P, given
     the fluorescence of reporter R.
 
@@ -196,19 +186,17 @@ def infer_prot_conc_multistep(curve_f, curve_v, ttu, drna, kr, dR,
         """
         kM = kru = 1.0
         Rrna, Ri, R = Y
-        return [ kM*promact(t) - drna * Rrna,
-                 kru*Rrna - (dR+kr) * Ri,
-                 kr * Ri - dR * R ]
-
+        return [kM * promact(t) - drna * Rrna,
+                kru * Rrna - (dR + kr) * Ri,
+                kr * Ri - dR * R]
 
     def model_VP(Y, t, promact):
         """ dPrna/dt = promact(t) - dPrna Prna(t)
             dP/dt = Prna - dP P(t) """
 
         Prna, P = Y
-        return [ promact(t) - drna * Prna,
-                 Prna - dP * P ]
-
+        return [promact(t) - drna * Prna,
+                Prna - dP * P]
 
     nvars_P, nvars_F = len(obs_P), len(obs_R)
 
@@ -219,30 +207,28 @@ def infer_prot_conc_multistep(curve_f, curve_v, ttu, drna, kr, dR,
     # H_P be inverted.
     t_end = curve_v.x.max()
     d = 2
-    ttu_promact = np.linspace(0, t_end, len(ttu)-nvars_P+d)[:-d]
+    ttu_promact = np.linspace(0, t_end, len(ttu) - nvars_P + d)[:-d]
 
-    H_F = make_H( model_VR, obs_R, ttu_promact, tt_fluo )
-    H_P = make_H( model_VP, obs_P, ttu_promact, ttu )
-
-
+    H_F = make_H(model_VR, obs_R, ttu_promact, tt_fluo)
+    H_P = make_H(model_VP, obs_P, ttu_promact, ttu)
 
     H_Pi = scipy.linalg.inv(H_P)
 
-    H_Pi2V = ( H_Pi * curve_v( ttu ) )[nvars_P:,:]
+    H_Pi2V = (H_Pi * curve_v(ttu))[nvars_P:, :]
 
     Ny, Nx = H_Pi2V.shape
-    Z_1 = 1.0* np.zeros((nvars_F, Nx))
-    Z_2 = 1.0* np.zeros((Ny, nvars_F))
-    I_F = 1.0* np.identity(nvars_F)
+    Z_1 = 1.0 * np.zeros((nvars_F, Nx))
+    Z_2 = 1.0 * np.zeros((Ny, nvars_F))
+    I_F = 1.0 * np.identity(nvars_F)
 
-    H1 = np.vstack( [np.hstack( [ I_F , Z_1 ] ),
-                     np.hstack( [ Z_2 , H_Pi2V ] )])
+    H1 = np.vstack([np.hstack([I_F, Z_1]),
+                    np.hstack([Z_2, H_Pi2V])])
 
-    HpF = H_F.dot( H1 )
+    HpF = H_F.dot(H1)
 
     ######
 
-    u, y , ic, alpha, scores = infer_control(HpF, curve_f.y, Nic=3,
-                                             alphas=alphas, eps_L=1e-6)
+    u, y, ic, alpha, scores = infer_control(HpF, curve_f.y, Nic=3,
+                                            alphas=alphas, eps_L=1e-6)
 
     return Curve(ttu, u), Curve(tt_fluo, y), ic, alpha, scores

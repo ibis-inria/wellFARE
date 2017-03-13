@@ -58,15 +58,11 @@ else:
     MATPLOTLIB_DETECTED = True
 
 
-
-
 @decorator.decorator
 def outplace(f, curve, *a, **k):
     new_curve = deepcopy(curve)
     f(new_curve, *a, **k)
     return new_curve
-
-
 
 
 class Curve:
@@ -118,22 +114,18 @@ class Curve:
         curve_3.plot()
     """
 
-
-
     def __init__(self, x=None, y=None, xy=None,
-                 left_value= np.nan, right_value= np.nan,
+                 left_value=np.nan, right_value=np.nan,
                  interpolation='linear'):
 
         if xy is not None:
-            x,y= zip(*xy)
-        self.x= np.array(x)
-        self.y= np.array(y)
+            x, y = zip(*xy)
+        self.x = np.array(x)
+        self.y = np.array(y)
         self.left_value = left_value
         self.right_value = right_value
         self.interpolation = interpolation
         self._update_interpolator()
-
-
 
     def _update_interpolator(self):
         """
@@ -144,24 +136,21 @@ class Curve:
         itr = interp1d(self.x, self.y, kind=self.interpolation)
 
         def f(x):
-            if hasattr(x,'__iter__'):
-                return np.array(list(map(f,x)))
+            if hasattr(x, '__iter__'):
+                return np.array(list(map(f, x)))
             else:
-                return (self.left_value if (x<self.x[0]) else (
-                        self.right_value if (x>self.x[-1]) else (
-                        self.y[0] if x==self.x[0] else (
-                        self.y[-1] if x==self.x[-1] else
-                        float(itr(x) )))))
+                return (self.left_value if (x < self.x[0]) else (
+                        self.right_value if (x > self.x[-1]) else (
+                            self.y[0] if x == self.x[0] else (
+                                self.y[-1] if x == self.x[-1] else
+                                float(itr(x))))))
 
         self.interpolator = f
 
-
-    def __call__(self,tt):
+    def __call__(self, tt):
         """ This method enables the curve to be called like a function
         of the time. """
         return self.interpolator(tt)
-
-
 
     # =================================================================
     # PROPERTIES OF THE CURVE
@@ -180,10 +169,7 @@ class Curve:
             do_something(x,y)
         """
 
-
         return np.array([self.x, self.y]).T
-
-
 
     def max(self):
         """ Returns the maximum value of the curve.
@@ -191,8 +177,6 @@ class Curve:
         >>> curve.max() == curve.y.max() # equivalent
         """
         return self.y.max()
-
-
 
     def argmax(self):
         """ Returns the value of `x` for which `y` is maximal.
@@ -206,16 +190,12 @@ class Curve:
         """
         return self.x[np.argmax(self.y)]
 
-
-
     def min(self):
         """ Returns the minimum value of the curve.
 
         >>> curve.min() == curve.y.min() # equivalent
         """
         return self.y.min()
-
-
 
     def argmin(self):
         """ Returns the value of `x` for which `y` is minimal.
@@ -229,8 +209,6 @@ class Curve:
         """
         return self.x[np.argmin(self.y)]
 
-
-
     def span_x(self):
         """ Returns x.max() - x.min() """
 
@@ -240,14 +218,10 @@ class Curve:
         """ Returns the (x.min, x.max) of the curve """
         return (self.x[0], self.x[-1])
 
-
-
     def span_y(self):
         """ Returns y.max() - y.min() """
 
         return self.y.max() - self.y.min()
-
-
 
     def mean(self):
         """ Mean value of the curve.
@@ -258,9 +232,7 @@ class Curve:
         """
         return self.integral().y[-1] / self.span_x()
 
-
-
-    def inv(self, check_bijective = True):
+    def inv(self, check_bijective=True):
         """ Returns the inverse curve.
 
         The inverse of the curve x->y = f(x) is the curve f(x)-> x
@@ -297,12 +269,10 @@ class Curve:
             if (True in arr) and (False in arr):
                 raise ValueError("Curve not bijective, cannot invert.")
 
-        if self.y[1]>self.y[0]:
+        if self.y[1] > self.y[0]:
             return Curve(y, x)
         else:
             return Curve(y[::-1], x[::-1])
-
-
 
     def arg(self, y):
         """ Returns a np.array containing all the values x such that
@@ -319,16 +289,14 @@ class Curve:
         """
 
         xx, yy = self.x, self.y
-        inds = np.nonzero( ((yy[:-1]-y)*(yy[1:]-y)) <= 0 )
-        return np.array([ xx[i] +
-                          (xx[i+1]-xx[i])*(y-yy[i])/(yy[i+1]-yy[i])
-                          for i in inds])
-
-
+        inds = np.nonzero(((yy[:-1] - y) * (yy[1:] - y)) <= 0)
+        return np.array([xx[i] +
+                         (xx[i + 1] - xx[i]) *
+                         (y - yy[i]) / (yy[i + 1] - yy[i])
+                         for i in inds])
 
     # ================================================================
     # TRANSFORMATIONS
-
 
     @outplace
     def fy(self, f, *f_args, **f_kwargs):
@@ -336,52 +304,38 @@ class Curve:
         self._update_interpolator()
 
     @outplace
-    def fx(self,f, *f_args, **f_kwargs):
+    def fx(self, f, *f_args, **f_kwargs):
         self.x = f(self.x, *f_args, **f_kwargs)
         self._update_interpolator()
-
-
 
     def mul_y(self, factor):
         """ Multiplies all values of curve.y by some factor.
         Creates a new curve. """
-        return self.fy(lambda y: factor*y)
-
-
+        return self.fy(lambda y: factor * y)
 
     def add_y(self, constant):
         """ Adds a constant to all values of curve.y.
         Creates a new curve. """
-        return self.fy(lambda y:y+constant)
-
-
+        return self.fy(lambda y: y + constant)
 
     def mul_x(self, factor):
         """ Multiplies all values of curve.x by some factor.
         Creates a new curve """
-        return self.fx(lambda x: factor*x)
-
-
+        return self.fx(lambda x: factor * x)
 
     def add_x(self, constant):
         """ Adds a constant to all values of curve.x ('x-shift').
         Creates a new curve. """
         return self.fx(lambda x: x + constant)
 
-
-
     def apply(self, f, *f_args, **f_kwargs):
-        return f( self, *f_args, **f_kwargs)
-
-
+        return f(self, *f_args, **f_kwargs)
 
     def delete_ind(self, ind):
         """ Returns a curve where points at indices specified by `ind`
         are removed. `ind` can be a single index, or a list or array
         of indices. """
         return Curve(np.delete(self.x, ind), np.delete(self.y, ind))
-
-
 
     def normalized(self, t=None, region=None):
         """ Divides the curve by some number. Creates a new curve.
@@ -396,31 +350,28 @@ class Curve:
         elif region is not None:
             D = self.crop(region).mean()
         else:
-            D =  self.mean()
+            D = self.mean()
 
-        return self/D
+        return self / D
 
-
-    def diff_win(self,deriv=1, win=2, order=1, sym=True):
+    def diff_win(self, deriv=1, win=2, order=1, sym=True):
         """
         Returns the discrete derivatives, or increases, of
         the measure
         """
         res = []
-        l,r = (floor(win/2),floor(win/2)) if sym else (0,win)
+        l, r = (floor(win / 2), floor(win / 2)) if sym else (0, win)
         lx = len(self.x)
-        for i in range(0,lx):
-            x = self.x[max(0, i-l) : min(lx, i+r)] -  self.x[i]
-            y = self.y[max(0, i-l) : min(lx, i+r)]
-            coef = np.polyfit(x,y,order)[-(deriv+1)]
+        for i in range(0, lx):
+            x = self.x[max(0, i - l): min(lx, i + r)] - self.x[i]
+            y = self.y[max(0, i - l): min(lx, i + r)]
+            coef = np.polyfit(x, y, order)[-(deriv + 1)]
             if deriv > 1:
-                coef *= 1.0/np.array(range(1,deriv)).prod()
+                coef *= 1.0 / np.array(range(1, deriv)).prod()
             res.append(coef)
-        return Curve( self.x, np.array(res))
+        return Curve(self.x, np.array(res))
 
-
-
-    def diff_sg(self, nx, hw= 1, deriv=1, order=3):
+    def diff_sg(self, nx, hw=1, deriv=1, order=3):
         """ Data differentiation using the SG-filter.
 
         Smooth (and opt. differentiate) data with a Savitzky-Golay
@@ -472,7 +423,8 @@ class Curve:
         xx = np.linspace(self.x[0], self.x[-1], nx)
         yy = self(xx)
 
-        yy = savgol_filter(yy,window_length=hw*2+1,polyorder=order,deriv=deriv, mode="interp")
+        yy = savgol_filter(yy, window_length=hw * 2 + 1,
+                           polyorder=order, deriv=deriv, mode="interp")
 
         '''rate=1.0
 
@@ -492,29 +444,21 @@ class Curve:
 
         return Curve(xx, yy)
 
-
-
-    def smooth_sg(self, nx, hw= 2, order=2):
+    def smooth_sg(self, nx, hw=2, order=2):
         """ Smoothing using the Savitsky-Golay filter """
         return self.diff_sg(nx, hw=hw, deriv=0, order=order)
-
 
     @outplace
     def integral(self):
 
         dx = np.diff(self.x)
-        terms = 0.5 * (self.y[1:]+self.y[:-1]) *dx
+        terms = 0.5 * (self.y[1:] + self.y[:-1]) * dx
         self.y = np.hstack([[0], np.cumsum(terms)])
         self.left_value = 0
         self.right_value = self.y[-1]
 
-
-
-
     # ================================================================
     # OPERATORS
-
-
 
     def _operate(self, operator, other, x=None):
         """ General operations on two curves.
@@ -527,71 +471,47 @@ class Curve:
             self2, other2 = Curve._same_x([self, other], x=x)
             return Curve(self2.x, operator(self2.y, other2.y))
         else:
-            return self.fy( lambda y: operator(y, other))
-
-
+            return self.fy(lambda y: operator(y, other))
 
     def __add__(self, term):
         """ Adds, 2 measures, or one measure and a constant. """
-        return self._operate(lambda y1, y2: y1+y2, term)
-
-
+        return self._operate(lambda y1, y2: y1 + y2, term)
 
     def __sub__(self, term):
         """ Substracts, 2 measures, or one measure and a constant. """
-        return self._operate(lambda y1, y2: y1-y2, term)
-
-
+        return self._operate(lambda y1, y2: y1 - y2, term)
 
     def __truediv__(self, term):
         """ Divides, 2 measures, or one measure and a constant. """
-        return self._operate(lambda y1, y2: y1/y2, term)
-
-
+        return self._operate(lambda y1, y2: y1 / y2, term)
 
     def __mul__(self, term):
         """ Multiplies, 2 measures, or one measure and a constant. """
-        return self._operate(lambda y1, y2: y1*y2, term)
-
-
+        return self._operate(lambda y1, y2: y1 * y2, term)
 
     def __pow__(self, term):
         """ Elevates to the power 'term': y=f(x)^term """
         return self._operate(lambda y1, y2: y1**y2, term)
 
-
-
     def __radd__(self, term):
-        return self+term
-
-
+        return self + term
 
     def __rsub__(self, term):
-        return (self - term)*(-1)
-
-
+        return (self - term) * (-1)
 
     def __rmul__(self, term):
-        return self*term
-
-
+        return self * term
 
     def __rdiv__(self, term):
         return (self**(-1.0)) * term
 
-
-
     # =================================================================
     # UTILITIES
-
-
 
     def fit(self, f, **kwargs):
         """ Fits a function to the Curve with Scipy's curve_fit.
             curve.fit(lambda x, c: c[0]*x + c[1])"""
         return curve_fit(f, self.x, self.y, **kwargs)
-
-
 
     @staticmethod
     def odeint(model, y0, x, args=(), **odeint_kw):
@@ -639,66 +559,58 @@ class Curve:
         else:
             return [Curve(x, line) for line in result.T]
 
-
-
-
     # =================================================================
     # ADDING / REMOVING POINTS
 
-
-
     @outplace
     def add_point(self, x, y):
-        xx =  np.hstack([self.x, np.array([x])])
+        xx = np.hstack([self.x, np.array([x])])
         yy = np.hstack([self.y, np.array([y])])
         inds = np.argsort(xx)
         self.x = xx[inds]
         self.y = yy[inds]
         self._update_interpolator()
 
-
     @outplace
     def filter(self, cond):
         xx, yy = self.x, self.y
         keep = [i for i in range(len(self.x))
-                   if cond(xx[i], yy[i])]
+                if cond(xx[i], yy[i])]
         self.x = xx[keep]
         self.y = yy[keep]
         self._update_interpolator()
 
-
     @outplace
-    def pop(self,i=-1):
+    def pop(self, i=-1):
         L = len(self.x)
-        if i<0: i = L-i
-        indices = [ind for ind in range(L) if ind!=i]
+        if i < 0:
+            i = L - i
+        indices = [ind for ind in range(L) if ind != i]
         self.x = self.x[indices]
         self.y = self.y[indices]
         self._update_interpolator()
 
-
     @outplace
-    def crop(self, xmin=None,xmax=None):
+    def crop(self, xmin=None, xmax=None):
         """ Removes all measurements taken before xmin or after xmax.
         """
 
         xx = self.x
         if (xmin is None) or (xmin <= xx[0]):
-            xmin= xx[0]
+            xmin = xx[0]
 
         if (xmax is None) or (xmax >= xx[-1]):
-            xmax= xx[-1]
+            xmax = xx[-1]
 
         x2 = xx[(xx >= xmin) & (xx <= xmax)]
         y2 = self(x2)
 
-        new_x = np.hstack([[xmin],x2,[xmax]])
-        new_y = np.hstack([[self(xmin)],y2,[self(xmax)]])
-        self.x =  new_x
-        self.y =  new_y
+        new_x = np.hstack([[xmin], x2, [xmax]])
+        new_y = np.hstack([[self(xmin)], y2, [self(xmax)]])
+        self.x = new_x
+        self.y = new_y
 
         self._update_interpolator()
-
 
     def resample(self, new_x, keep_xspan=True):
         """ Returns a new curve resampled at the times x """
@@ -711,8 +623,6 @@ class Curve:
 
     #=================================================================
     # OPERATIONS ON SEVERAL CURVES
-
-
 
     @staticmethod
     def _same_x(curves, x=None):
@@ -728,8 +638,7 @@ class Curve:
             x = np.sort(np.array(list(set(x))))
         x = x[(x >= xmin) & (x <= xmax)]
 
-        return [ c.resample(x) for c in curves]
-
+        return [c.resample(x) for c in curves]
 
     def corrcoef(self, other, time_aware=False):
         if time_aware:
@@ -748,20 +657,16 @@ class Curve:
         xx = np.hstack([c.x for c in curves])
         yy = np.hstack([c.y for c in curves])
         xx_yy = np.vstack([xx, yy])
-        xx_yy = xx_yy[:,xx_yy[0,:].argsort()]
-        return Curve(xx_yy[0,:], xx_yy[1,:])
+        xx_yy = xx_yy[:, xx_yy[0, :].argsort()]
+        return Curve(xx_yy[0, :], xx_yy[1, :])
 
-
-
-    def merge_with(self,curves):
+    def merge_with(self, curves):
         """
         c1.merge_with(c2) or c1.merge_with(c2,c3,c4)
         """
         if isinstance(curves, Curve):
             curves = [curves]
         return Curve.merge([self] + curves)
-
-
 
     @staticmethod
     def mean_std(curves, x=None):
@@ -802,9 +707,7 @@ class Curve:
         yy = np.array([c.y for c in curves])
         means = yy.mean(axis=0)
         stds = yy.std(axis=0)
-        return Curve(x,means), Curve(x,stds)
-
-
+        return Curve(x, means), Curve(x, stds)
 
     @staticmethod
     def percentile(curves, p, x=None):
@@ -817,8 +720,8 @@ class Curve:
         if x is None:
             x = curves[0].x
         yy_list = [np.array([c(px) for c in curves]) for px in x]
-        percentiles = [np.percentile(yy,p) for yy in yy_list]
-        return Curve(x,percentiles)
+        percentiles = [np.percentile(yy, p) for yy in yy_list]
+        return Curve(x, percentiles)
 
     @staticmethod
     def minimum(curves, x=None):
@@ -831,7 +734,7 @@ class Curve:
         if x is None:
             x = curves[0].x
         yy = [min([c(px) for c in curves]) for px in x]
-        return Curve(x,yy)
+        return Curve(x, yy)
 
     @staticmethod
     def maximum(curves, x=None):
@@ -844,9 +747,7 @@ class Curve:
         if x is None:
             x = curves[0].x
         yy = [max([c(px) for c in curves]) for px in x]
-        return Curve(x,yy)
-
-
+        return Curve(x, yy)
 
     def find_shift_fft(self, other, precision=None, cutoff_x=None):
         """ Shift-finding using cross-validation and the FFT
@@ -895,15 +796,14 @@ class Curve:
                     for curve,shift in zip(other_curves, shifts)]
         """
 
-        curves = [self]+other
+        curves = [self] + other
         xstart = max(c.x[0] for c in curves)
         xend = min(c.x[-1] for c in curves)
-        Lx = xend-xstart
-        dx = 1.0*Lx/len(self.x) if precision is None else precision
+        Lx = xend - xstart
+        dx = 1.0 * Lx / len(self.x) if precision is None else precision
 
         xx = np.arange(xstart, xend, dx)
         signals = [c(xx) for c in curves]
-
 
         rffts = [np.fft.rfft(s) for s in signals]
 
@@ -912,21 +812,19 @@ class Curve:
         if cutoff_x is not None:
             # 'filter' the curves by cutting off high frequencies.
 
-            cut = int(1.0*Lx/cutoff_x)
+            cut = int(1.0 * Lx / cutoff_x)
             if cut < Nx:
                 for tf in rffts:
-                    tf[ cut:] = 0
+                    tf[cut:] = 0
 
         ref_fft = rffts[0]
-        argmaxs = [ np.argmax(np.fft.irfft(ref_fft * np.conj(f)))
-                    for f in rffts[1:]]
+        argmaxs = [np.argmax(np.fft.irfft(ref_fft * np.conj(f)))
+                   for f in rffts[1:]]
 
-        shifts = np.array([ ((a-Nx) if (a > Nx/2) else a)
-                    for a in argmaxs ])
+        shifts = np.array([((a - Nx) if (a > Nx / 2) else a)
+                           for a in argmaxs])
 
-        return dx*shifts
-
-
+        return dx * shifts
 
     def find_shift_gradient(self, others, tt, shifts0=[0], **fmin_kw):
         """ Shift-finding using a gradient algorithm.
@@ -960,17 +858,15 @@ class Curve:
 
         """
 
-
         self_y = self(tt)
         self_y = (self_y - self_y.mean())
-
 
         def make_obj(curve):
 
             def obj(s):
-                curve_y = curve(tt-s)
+                curve_y = curve(tt - s)
                 curve_y = curve_y - self_y.mean()
-                return -(self_y*curve_y).sum() / curve_y.std()
+                return -(self_y * curve_y).sum() / curve_y.std()
 
             return obj
 
@@ -979,32 +875,22 @@ class Curve:
             shift0 = shifts0[np.argmin(list(map(obj, shifts0)))]
             return fmin(obj, x0=shift0, disp=0, **fmin_kw)[0]
 
-        return [optimize( make_obj( c )) for c in others]
-
-
+        return [optimize(make_obj(c)) for c in others]
 
     def find_intersections(self, other):
         """ Finds all the `x` at which the curve intersects with the
         `other` curve. """
 
-        return (self-other).arg(0)
-
-
+        return (self - other).arg(0)
 
     #=================================================================
     # I/O OPERATIONS
 
-
-
     def __getstate__(self):
-        return {'x':self.x, 'y': self.y}
-
-
+        return {'x': self.x, 'y': self.y}
 
     def __setstate__(self, state):
         self.__init__(state['x'], state['y'])
-
-
 
     def save(self, filename=None):
         """ Saves the curve to a file.
@@ -1020,8 +906,6 @@ class Curve:
         with open(filename, 'w+') as output:
             pickle.dump(self, output, pickle.HIGHEST_PROTOCOL)
 
-
-
     def savetxt(self, filename, fmt='%.18e', delimiter=' ',
                 newline='\n', header='', footer='', comments='# '):
         """ Writes the curve to a txt/csv file.
@@ -1034,10 +918,8 @@ class Curve:
         """
 
         np.savetxt(filename, X=self.xy, fmt=fmt, delimiter=delimiter,
-                     newline=newline, header=header, footer=footer,
-                     comments=comments)
-
-
+                   newline=newline, header=header, footer=footer,
+                   comments=comments)
 
     @staticmethod
     def save_object(obj, filename):
@@ -1063,8 +945,6 @@ class Curve:
 
         with open(filename, 'wb+') as output:
             pickle.dump(obj, output, pickle.HIGHEST_PROTOCOL)
-
-
 
     @staticmethod
     def load(filename):
@@ -1092,22 +972,18 @@ class Curve:
         """
 
         xy = np.loadtxt(filename, comments=comments,
-               delimiter=delimiter, converters=converters,
-               skiprows=skiprows, usecols=usecols, unpack=unpack,
-               ndmin=ndmin)
+                        delimiter=delimiter, converters=converters,
+                        skiprows=skiprows, usecols=usecols, unpack=unpack,
+                        ndmin=ndmin)
 
-        return Curve(xy = xy)
+        return Curve(xy=xy)
 
     # ===   PRINTING AND PLOTTING ====================================
-
-
 
     def __str__(self):
         return str(self.xy)
 
-
-
-    def plot(self,ax = None, hold = False, **plot_kw):
+    def plot(self, ax=None, hold=False, **plot_kw):
         """ Plots the Curve using Matplotlib
 
         ``curve.plot()`` is equivalent to (but shorter)
@@ -1143,10 +1019,10 @@ class Curve:
 
         if not MATPLOTLIB_DETECTED:
             raise ImportError("You need to install Matplotlib in"
-                               "order to plot curves.")
+                              "order to plot curves.")
 
         if ax is None:
-            fig,ax = plt.subplots(1)
+            fig, ax = plt.subplots(1)
         line = ax.plot(self.x, self.y, **plot_kw)
 
         if hold:
@@ -1154,7 +1030,7 @@ class Curve:
 
         return line
 
-    def hist(self,ax = None, hold = False, **plot_kw):
+    def hist(self, ax=None, hold=False, **plot_kw):
         """ Plots the histogram of the Curve using Matplotlib
 
         ``curve.hist()`` is equivalent to (but shorter)
@@ -1190,10 +1066,10 @@ class Curve:
 
         if not MATPLOTLIB_DETECTED:
             raise ImportError("You need to install Matplotlib in"
-                               "order to plot curves.")
+                              "order to plot curves.")
 
         if ax is None:
-            fig,ax = plt.subplots(1)
+            fig, ax = plt.subplots(1)
         line = ax.hist(self.y, **plot_kw)
 
         if hold:
@@ -1207,11 +1083,10 @@ class Curve:
 
 if __name__ == '__main__':
 
-
     import numpy as np
-    xx = np.linspace(0,100, 200)
+    xx = np.linspace(0, 100, 200)
     yy = np.sin(xx) + xx**2
-    c =  Curve(xx, yy)
+    c = Curve(xx, yy)
     print(c(0))
     print(c(50))
 

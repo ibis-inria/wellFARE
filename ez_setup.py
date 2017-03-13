@@ -32,9 +32,11 @@ except ImportError:
 DEFAULT_VERSION = "0.9.6"
 DEFAULT_URL = "https://pypi.python.org/packages/source/s/setuptools/"
 
+
 def _python_cmd(*args):
     args = (sys.executable,) + args
     return subprocess.call(args) == 0
+
 
 def _install(tarball, install_args=()):
     # extracting the tarball
@@ -122,14 +124,14 @@ def use_setuptools(version=DEFAULT_VERSION, download_base=DEFAULT_URL,
         e = sys.exc_info()[1]
         if was_imported:
             sys.stderr.write(
-            "The required version of setuptools (>=%s) is not available,\n"
-            "and can't be installed while this script is running. Please\n"
-            "install a more recent version first, using\n"
-            "'easy_install -U setuptools'."
-            "\n\n(Currently using %r)\n" % (version, e.args[0]))
+                "The required version of setuptools (>=%s) is not available,\n"
+                "and can't be installed while this script is running. Please\n"
+                "install a more recent version first, using\n"
+                "'easy_install -U setuptools'."
+                "\n\n(Currently using %r)\n" % (version, e.args[0]))
             sys.exit(2)
         else:
-            del pkg_resources, sys.modules['pkg_resources'] # reload ok
+            del pkg_resources, sys.modules['pkg_resources']  # reload ok
             return _do_download(version, download_base, to_dir,
                                 download_delay)
     except pkg_resources.DistributionNotFound:
@@ -157,7 +159,7 @@ attempt.
     url = download_base + tgz_name
     saveto = os.path.join(to_dir, tgz_name)
     src = dst = None
-    if not os.path.exists(saveto): # Avoid repeated downloads
+    if not os.path.exists(saveto):  # Avoid repeated downloads
         try:
             log.warn("Downloading %s", url)
             src = urlopen(url)
@@ -194,7 +196,7 @@ list returned by getmembers().
             # Extract directories with a safe mode.
             directories.append(tarinfo)
             tarinfo = copy.copy(tarinfo)
-            tarinfo.mode = 448 # decimal for oct 0700
+            tarinfo.mode = 448  # decimal for oct 0700
         self.extract(tarinfo, path)
 
     # Reverse sort directories.
@@ -233,6 +235,7 @@ Build the arguments to 'python setup.py install' on the setuptools package
         install_args.append('--user')
     return install_args
 
+
 def _parse_args():
     """
 Parse the command line for options
@@ -249,11 +252,13 @@ Parse the command line for options
     # positional arguments are ignored
     return options
 
+
 def main(version=DEFAULT_VERSION):
     """Install or upgrade setuptools and EasyInstall"""
     options = _parse_args()
     tarball = download_setuptools(download_base=options.download_base)
     return _install(tarball, _build_install_args(options))
+
 
 if __name__ == '__main__':
     sys.exit(main())

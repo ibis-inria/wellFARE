@@ -20,28 +20,32 @@ from .parsing import parse_tecan, merge_wells_dicts
 
 
 DEFAULTS = {
-    'n_control_points':100,
+    'n_control_points': 100,
     'dRNA': 1.0,
-    'eps_L' : 0.000001,
-    'alphalow' : -10,
-    'alphahigh' : 10,
-    'nalphastep' : 1000,
+    'eps_L': 0.000001,
+    'alphalow': -10,
+    'alphahigh': 10,
+    'nalphastep': 1000,
 }
+
+
 def get_var_with_default(data, var):
     if var in data:
         return data.get(var)
     elif var in DEFAULTS:
         return DEFAULTS[var]
     else:
-        raise ValueError("Variable %s was not provided and no default value"%var
-                        +" is known for this variable (check spelling ?)")
+        raise ValueError("Variable %s was not provided and no default value" % var
+                         + " is known for this variable (check spelling ?)")
+
 
 def check_noNaN(array, name, fun, additional_message=''):
     if np.isnan(np.sum(array)):
-        raise AssertionError("Error: Array '%s' in function %s has NaNs ! %s"%(
-                              name, fun, additional_message))
+        raise AssertionError("Error: Array '%s' in function %s has NaNs ! %s" % (
+            name, fun, additional_message))
 
 # THE MAIN FUNCTION, CALLED BY THE PYTHON/JS PROCESS:
+
 
 def json_process(command, input_data):
     """ Calls the right function depending on the ``command``.
@@ -62,7 +66,7 @@ def json_process(command, input_data):
             'calibrationcurve': wellfare_calibrationcurve,
             'parsetecan': wellfare_parsetecan
 
-           }[command](input_data)
+            }[command](input_data)
 
 
 # THE SPECIFIC FUNCTIONS, ONE FOR EACH TASK:
@@ -102,14 +106,14 @@ def wellfare_growth(data):
     check_noNaN(curve_v.y, "curve_v.y", "wellfare_growth")
 
     n_control_points = get_var_with_default(data, 'n_control_points')
-    ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
-
+    ttu = np.linspace(curve_v.x.min(), curve_v.x.max(),
+                      n_control_points + 3)[:-3]
 
     eps_L = get_var_with_default(data, 'eps_L')
     alphalow = get_var_with_default(data, 'alphalow')
     alphahigh = get_var_with_default(data, 'alphahigh')
     nalphastep = get_var_with_default(data, 'nalphastep')
-    alphas = np.logspace(alphalow,alphahigh,nalphastep)
+    alphas = np.logspace(alphalow, alphahigh, nalphastep)
 
     growth, volume, _, _, _ = infer_growth_rate(curve_v, ttu,
                                                 alphas=alphas, eps_L=eps_L, positive=positive)
@@ -118,7 +122,6 @@ def wellfare_growth(data):
 
     return {'times_growth_rate': list(growth.x.astype(float)),
             'values_growth_rate': list(growth.y.astype(float))}
-
 
 
 def wellfare_activity(data):
@@ -156,13 +159,14 @@ def wellfare_activity(data):
     dR = data['dR']
 
     n_control_points = get_var_with_default(data, 'n_control_points')
-    ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
+    ttu = np.linspace(curve_v.x.min(), curve_v.x.max(),
+                      n_control_points + 3)[:-3]
 
     eps_L = get_var_with_default(data, 'eps_L')
     alphalow = get_var_with_default(data, 'alphalow')
     alphahigh = get_var_with_default(data, 'alphahigh')
     nalphastep = get_var_with_default(data, 'nalphastep')
-    alphas = np.logspace(alphalow,alphahigh,nalphastep)
+    alphas = np.logspace(alphalow, alphahigh, nalphastep)
 
     if 'kR' in data:
         # use a two-step model of reporter expression
@@ -173,9 +177,9 @@ def wellfare_activity(data):
         synth_rate, _, _, _, _ = infer_synthesis_rate_multistep(
             curve_v=curve_v,
             curve_f=curve_f,
-            ttu = ttu,
-            drna = dRNA,
-            kr = kR,
+            ttu=ttu,
+            drna=dRNA,
+            kr=kR,
             dR=dR,
             alphas=alphas,
             eps_L=eps_L)
@@ -185,14 +189,13 @@ def wellfare_activity(data):
         synth_rate, _, _, _, _ = infer_synthesis_rate_onestep(
             curve_v=curve_v,
             curve_f=curve_f,
-            ttu = ttu,
+            ttu=ttu,
             degr=dR,
             alphas=alphas,
             eps_L=eps_L)
 
     return {'times_activity': list(synth_rate.x.astype(float)),
             'values_activity': list(synth_rate.y.astype(float))}
-
 
 
 def wellfare_concentration(data):
@@ -221,22 +224,22 @@ def wellfare_concentration(data):
        }
     """
 
-
-    curve_v = Curve( data['times_volume'],
-                     data['values_volume'])
-    curve_f = Curve( data['times_fluo'],
-                     data['values_fluo'])
+    curve_v = Curve(data['times_volume'],
+                    data['values_volume'])
+    curve_f = Curve(data['times_fluo'],
+                    data['values_fluo'])
     dR = data['dR']
     dP = data['dP']
 
     n_control_points = get_var_with_default(data, 'n_control_points')
-    ttu = np.linspace(curve_v.x.min(), curve_v.x.max(), n_control_points+3)[:-3]
+    ttu = np.linspace(curve_v.x.min(), curve_v.x.max(),
+                      n_control_points + 3)[:-3]
 
     eps_L = get_var_with_default(data, 'eps_L')
     alphalow = get_var_with_default(data, 'alphalow')
     alphahigh = get_var_with_default(data, 'alphahigh')
     nalphastep = get_var_with_default(data, 'nalphastep')
-    alphas = np.logspace(alphalow,alphahigh,nalphastep)
+    alphas = np.logspace(alphalow, alphahigh, nalphastep)
 
     if 'kR' in data:
         # use a two-step model of reporter expression
@@ -247,8 +250,8 @@ def wellfare_concentration(data):
         concentration, _, _, _, _ = infer_prot_conc_multistep(
             curve_v=curve_v,
             curve_f=curve_f,
-            ttu = ttu,
-            drna= dRNA,
+            ttu=ttu,
+            drna=dRNA,
             kr=kR,
             dR=dR,
             dP=dP,
@@ -258,14 +261,13 @@ def wellfare_concentration(data):
         concentration, _, _, _, _ = infer_prot_conc_onestep(
             curve_v=curve_v,
             curve_f=curve_f,
-            ttu = ttu,
-            dR=dR, dP = dP,
+            ttu=ttu,
+            dR=dR, dP=dP,
             alphas=alphas,
             eps_L=eps_L)
 
     return {'times_concentration': list(concentration.x.astype(float)),
             'values_concentration': list(concentration.y.astype(float))}
-
 
 
 # ===  PREPROCESSING ==============================================
@@ -340,9 +342,9 @@ def wellfare_outliers(data):
 
     cleaned_curve = filter_outliers(curve, **data)
 
+    return {'times_cleaned_curve': list(cleaned_curve.x.astype(float)),
+            'values_cleaned_curve': list(cleaned_curve.y.astype(float))}
 
-    return { 'times_cleaned_curve': list(cleaned_curve.x.astype(float)),
-             'values_cleaned_curve': list(cleaned_curve.y.astype(float)) }
 
 def wellfare_outliersnew(data):
     """ Removes outliers from a curve using smooting spline.
@@ -372,8 +374,9 @@ def wellfare_outliersnew(data):
 
     cleaned_curve = filter_outliersnew(curve, **data)
 
-    return { 'times_cleaned_curve': list(cleaned_curve.x.astype(float)),
-             'values_cleaned_curve': list(cleaned_curve.y.astype(float)) }
+    return {'times_cleaned_curve': list(cleaned_curve.x.astype(float)),
+            'values_cleaned_curve': list(cleaned_curve.y.astype(float))}
+
 
 def wellfare_synchronize(data):
     """ Returns the lag between two curves.
@@ -407,15 +410,14 @@ def wellfare_synchronize(data):
     max_shift = data['max_shift']
 
     shifts0 = np.arange(-max_shift, max_shift, 10)
-    t_min = max(curve_1.x[0],curve_2.x[0]) + max_shift + 1
-    t_max = min(curve_1.x[-1],curve_2.x[-1]) - max_shift - 1
+    t_min = max(curve_1.x[0], curve_2.x[0]) + max_shift + 1
+    t_max = min(curve_1.x[-1], curve_2.x[-1]) - max_shift - 1
     tt = np.linspace(t_min, t_max, 50)
 
     time_shift = curve_1.find_shift_gradient([curve_2], tt,
-                                           shifts0 = shifts0)[0]
+                                             shifts0=shifts0)[0]
 
     return {'time_shift': time_shift}
-
 
 
 def wellfare_subtract(data):
@@ -448,8 +450,8 @@ def wellfare_subtract(data):
     subtraction = (curve_1 - curve_2)
     new_x = np.array([x for x in curve_1.x if x in subtraction.x])
 
-    return { 'times_subtraction': list(new_x),
-             'values_subtraction': list(subtraction(new_x)) }
+    return {'times_subtraction': list(new_x),
+            'values_subtraction': list(subtraction(new_x))}
 
 
 def wellfare_calibrationcurve(data):
@@ -471,17 +473,17 @@ def wellfare_calibrationcurve(data):
     """
 
     abscurve = Curve(data['abs_time'],
-                    data['abs_value'])
+                     data['abs_value'])
     fluocurve = Curve(data['fluo_time'],
-                    data['fluo_value'])
+                      data['fluo_value'])
 
-    calibrationcurve, calibrationcurve_smoothextrapolation = calibration_curve(abscurve,fluocurve,data['smoothing'],data['extrapoldistance'],data['validinterval'])
+    calibrationcurve, calibrationcurve_smoothextrapolation = calibration_curve(
+        abscurve, fluocurve, data['smoothing'], data['extrapoldistance'], data['validinterval'])
 
     return {'calcurve_time': list(calibrationcurve.x.astype(float)),
             'calcurve_value': list(calibrationcurve.y.astype(float)),
             'calcurvesmoothed_time': list(calibrationcurve_smoothextrapolation.x.astype(float)),
             'calcurvesmoothed_value': list(calibrationcurve_smoothextrapolation.y.astype(float))}
-
 
 
 def wellfare_parsetecan(data):
@@ -538,11 +540,12 @@ def wellfare_parsetecan(data):
         for measurename in jsonfile['measureTypes']:
             if measurename in wells[wellname]:
                 measure = {}
-                measure["time"] = list(wells[wellname][measurename].x.astype(float))
-                measure["originalSignal"] = list(wells[wellname][measurename].y.astype(float))
+                measure["time"] = list(
+                    wells[wellname][measurename].x.astype(float))
+                measure["originalSignal"] = list(
+                    wells[wellname][measurename].y.astype(float))
                 well['measures'][measurename] = measure
 
         jsonfile['wells'][wellname] = well
 
-
-    return  { 'parsedfile'  : jsonfile }
+    return {'parsedfile': jsonfile}

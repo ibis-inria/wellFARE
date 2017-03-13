@@ -11,16 +11,16 @@ import json
 import wellfare.json_api
 
 
-
-
 class HTTPRequestHandler(BaseHTTPRequestHandler):
-    def do_OPTIONS(self):	
+    def do_OPTIONS(self):
         self.send_response(200, "ok")
         self.send_header('Access-Control-Allow-Credentials', 'true')
-        self.send_header('Access-Control-Allow-Origin', "*")#'http://iae-spring.upmf-grenoble.fr') # needs to be changed
+        # 'http://iae-spring.upmf-grenoble.fr') # needs to be changed
+        self.send_header('Access-Control-Allow-Origin', "*")
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
-        self.send_header("Access-Control-Allow-Headers", "X-Requested-With, Content-type")
-	
+        self.send_header("Access-Control-Allow-Headers",
+                         "X-Requested-With, Content-type")
+
     def do_POST(self):
 
         command = self.path.split('/')[-1]
@@ -33,16 +33,17 @@ class HTTPRequestHandler(BaseHTTPRequestHandler):
             length = int(self.headers.getheader('content-length'))
             data = cgi.parse_qs(self.rfile.read(length), keep_blank_values=1)
             input_data = json.loads(data['json'][0])
-            
+
             output_data = wellfare.json_api.json_process(command, input_data)
-            
-            #except AssertionError as err:
+
+            # except AssertionError as err:
             #    self.send_response(500, "Internal server error: %s"%err.message)
-            #else:
-                # send results to client
+            # else:
+            # send results to client
             self.send_response(200)
             self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', "*")#'http://iae-spring.upmf-grenoble.fr')
+            # 'http://iae-spring.upmf-grenoble.fr')
+            self.send_header('Access-Control-Allow-Origin', "*")
             self.end_headers()
 
             json_output_data = json.dumps(output_data)
@@ -81,6 +82,7 @@ class SimpleHttpServer():
         self.server.shutdown()
         self.waitForThread()
 
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='HTTP Server')
@@ -90,6 +92,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     server = SimpleHttpServer(args.ip, args.port)
-    print ('HTTP Server Running...........')
+    print('HTTP Server Running...........')
     server.start()
     server.wait_for_thread()
