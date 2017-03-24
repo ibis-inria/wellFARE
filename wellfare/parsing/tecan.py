@@ -13,7 +13,7 @@ import numpy as np
 
 from ..curves import Curve
 
-def parse_tecan(filename, sheet_index=None):
+def parse_tecan(filename, sheet_index=None, info=False):
     """ Parses a .xlsx file from a cinetic experiment
 
     File specifications:
@@ -22,12 +22,73 @@ def parse_tecan(filename, sheet_index=None):
     """
     sheets = workbook2numpy(filename, sheet_index=sheet_index)
 
+    if info :
+        info_dict = get_info(sheets)
+
     if isinstance(sheets, list):
         starts = map(find_start_in_sheet, sheets)
         t0 = min([ s for s in starts if (s is not None)])
-        return [parseSheet(sheet, t0=t0)[1] for sheet in sheets]
+        if info:
+            return [[parse_sheet(sheet, t0=t0)[1] for sheet in sheets], info_dict]
+        else:
+            return [parse_sheet(sheet, t0=t0)[1] for sheet in sheets]
     else:
-        return parseSheet(sheets)
+        if info:
+            return [parse_sheet(sheets), info_dict]
+        else:
+            return parse_sheet(sheets)
+
+
+def get_info(sheets):
+
+    info_dict = {}
+
+    if isinstance(sheets, list):
+        i = 0
+        while len(sheets[i][0]) == 0:
+            i += 1
+        sheet = sheets[i]
+
+    i = 0
+    print("SHEET", sheet.shape)
+    modeindex = 0
+    nameindex = 0
+    while i < sheet.shape[0]:
+        if sheet[i][0].startswith('List of actions'):
+            print("ACTIONS",i)
+            info_dict["actions"] = []
+            i+=1
+            while not ('Label' in sheet[i][0]):
+                if len(sheet[i][0]) != 0 :
+                    linelist = [var for var in sheet[i] if var]
+                    info_dict["actions"].append([ linelist[0] , ' '.join(linelist[1:]) ])
+                i += 1
+
+        if sheet[i][0].startswith('Mode'):
+            print("MODE", i)
+            linelist = [var for var in sheet[i] if var]
+            info_dict[modeindex] = [[ linelist[0] , ' '.join(linelist[1:]) ]]
+            i += 1
+            while not (sheet[i][0].startswith('Mode') or len(sheet[i][0]) == 0 or sheet[i][0].startswith('Start Time') ):
+                linelist = [var for var in sheet[i] if var]
+                info_dict[modeindex].append([ linelist[0] , ' '.join(linelist[1:]) ])
+                i += 1
+
+            if len(sheet[i][0]) != 0:
+                i -= 1
+            modeindex += 1
+
+        if sheet[i][0].startswith('Start Time'):
+            linelist = [var for var in sheet[i] if var]
+            info_dict["Start Time"] = ' '.join(linelist[1:])
+
+        if sheet[i][0].startswith('Cycle Nr'):
+            info_dict[nameindex].append(['Name',sheet[i-1][0]])
+            nameindex += 1
+
+        i += 1
+
+    return info_dict
 
 
 def workbook2numpy(filename, sheet_index=None):
@@ -85,10 +146,9 @@ def parse_sheet(sheet, t0 = None):
             if t0 is None:
                 t0 = start_time
             start_time = start_time-t0
-            parseLabels(sheet,i, wells_dict, start_time)
+            parse_labels(sheet,i, wells_dict, start_time)
 
     return t0, wells_dict
-
 
 
 def parse_labels(sheet,i, wells_dict, start_time):
@@ -99,7 +159,7 @@ def parse_labels(sheet,i, wells_dict, start_time):
     j = i
     while sheet[j][0] != "End Time:":
         if sheet[j][0] == "Cycle Nr.":
-            parseLabel(sheet,j, wells_dict,  start_time)
+            parse_label(sheet,j, wells_dict,  start_time)
         j +=1
 
 
@@ -131,6 +191,8 @@ def parse_label(sheet,i, wells_dict,  start_time=0,
     except:
         xmax = len(list(sheet[i]))
 
+    if sheet[i+1][1] == '':
+        return #return if the first data element is empty (meaning all data should be empty)
 
     if not timePerWell:
         # read the times once and for all
@@ -146,22 +208,28 @@ def parse_label(sheet,i, wells_dict,  start_time=0,
         except:
             xmax = len(list(sheet[j]))
 
-        well = sheet[j,0]
+        try:
+            well = sheet[j,0]
 
-        if timePerWell:
-            tt = sheet[j+1, 1:xmax].astype(float)/60000 + start_time
+            if timePerWell:
+                tt = sheet[j+1, 1:xmax].astype(float)/60000 + start_time
 
-        yy = sheet[j,1:xmax]
-        yy[yy == 'OVER'] = over_replace
-        curve = Curve(tt.astype(float), yy.astype(float))
+            yy = sheet[j,1:xmax]
+            yy[yy == 'OVER'] = over_replace
 
-        if not (label in wells_dict[well].keys()):
-            wells_dict[well][label] = curve
-        else:
-            wells_dict[well][label] = wells[well][label].merge_with(curve)
 
-        j += 2 if timePerWell else 1
+            curve = Curve(tt.astype(float), yy.astype(float))
 
+            if not (label in wells_dict[well].keys()):
+                wells_dict[well][label] = curve
+            else:
+                wells_dict[well][label] = wells[well][label].merge_with(curve)
+
+            j += 2 if timePerWell else 1
+        except:
+            j += 2 if timePerWell else 1
+            continue
+            pass
 
 
 def merge_wells_dicts(wells_dicts):

@@ -1,7 +1,7 @@
 """ wellfare """
 
-__all__ = [ 
-           
+__all__ = [
+
 
            # from .data_treatment
 
@@ -27,8 +27,8 @@ __all__ = [
 
            'infer_control',
            'infer_growth_rate',
-           'infer_promact', # two-step
-           'infer_synthesis_rate', # one-step
+           'infer_synthesis_rate_onestep', # one-step
+           'infer_synthesis_rate_multistep', # two-step
            'infer_prot_conc_onestep',
            'infer_prot_conc_multistep',
 
@@ -37,8 +37,8 @@ __all__ = [
 
 from .ILM import ( infer_control,
                    infer_growth_rate,
-                   infer_promact, # two-step
-                   infer_synthesis_rate, # one-step
+                   infer_synthesis_rate_onestep, # one-step
+                   infer_synthesis_rate_multistep, # two-step
                    infer_prot_conc_onestep,
                    infer_prot_conc_multistep)
 
@@ -56,4 +56,3 @@ from .parsing import (parse_tecan,
                       date2seconds)
 
 from .version import __version__
-

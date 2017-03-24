@@ -7,6 +7,8 @@ For the moment, the only feature implemented  the removal of ouliers caused by b
 
 import numpy as np
 from ..curves import Curve
+from scipy.interpolate import UnivariateSpline
+
 
 def remove_bumps(curve, side, percentile=50, niter=1, goal=0):
     """ Removes onesided outliers
@@ -61,17 +63,16 @@ def remove_bumps(curve, side, percentile=50, niter=1, goal=0):
 
         dydx = np.diff(yy)/np.diff(xx)
         ddyddx = np.diff(dydx)/np.diff(xx[:-1])
+
         thr = np.percentile(-ddyddx[ddyddx<0], percentile)
-
-        if max(-ddyddx[ddyddx<0])< goal:
-            break
-
         inds = np.nonzero(ddyddx > -thr)
+
+        if max(-ddyddx[ddyddx < 0]) < goal:
+            break
         inds = [i+1 for i in inds]
         xx, yy = xx[inds],yy[inds]
 
     return Curve(xx,yy)
-
 
 
 def filter_outliers(curve, percentile_above=100, percentile_below=100,
@@ -102,7 +103,60 @@ def filter_outliers(curve, percentile_above=100, percentile_below=100,
                                niter=niter_below, goal=goal_below)
 
     curve_s = curve_f.diff_win(0, win=smoothing_win)
+
     curve_std = (curve_f - curve_s).fy(abs).diff_win(
                                             0,win=smoothing_win)
     fl = lambda x,y : abs(y-curve_s(x))<= nstd*curve_std(x)
+
     return curve.filter(fl)
+
+
+def calibration_curve(abscurve, fluocurve, smoothing, extrapoldistance, validinterval):
+    """ Return raw and smoothed (polyfited) calibration curve for a background well. (Fluo = f(Abs))
+
+    """
+
+    absinterp = abscurve(fluocurve.x)
+    autofluo = fluocurve(fluocurve.x)
+
+    #sort and remove duplicates
+    absinterp, sortedbyabs = np.unique(absinterp, return_index=True)
+    autofluo = autofluo[sortedbyabs]
+
+    #remove nan
+    nonanargs = np.logical_not( np.logical_or(np.isnan(absinterp), np.isnan(autofluo)) )
+    absinterp = absinterp[nonanargs]
+    autofluo = autofluo[nonanargs]
+
+    rawcalibrationcurve = Curve(absinterp, autofluo)
+
+    #keep valid interval data
+    if (validinterval == None) or (not isinstance(validinterval,list)):
+        validinterval = [None,None]
+    if validinterval[0] == None:
+        validinterval[0] = np.min(absinterp)
+    if validinterval[1] == None:
+        validinterval[1] = np.max(absinterp)
+
+    validindexes = np.where(np.logical_and(absinterp>=validinterval[0],absinterp<=validinterval[1]))
+    absinterp = absinterp[validindexes]
+    autofluo = autofluo[validindexes]
+
+    #smoothing
+    if smoothing == None:
+        smoothing = 10
+    if smoothing > absinterp.shape[0] :
+        print("smothing parameter too big")
+        smoothing = absinterp.shape[0]
+
+    print("TEST",absinterp.shape,autofluo.shape,smoothing)
+
+    calibrationcurve = Curve(absinterp, autofluo)
+    smoothedcalcurve = calibrationcurve.smooth_sg(1000,smoothing,3)
+
+    #extrapolate
+    spline = UnivariateSpline(smoothedcalcurve.x, smoothedcalcurve.y, k=1)
+    #extrapoldistance = (absinterp.max()-absinterp.min())/10
+    extendedabs = np.linspace(absinterp.min() - extrapoldistance,absinterp.max() + extrapoldistance,1000)
+
+    return [rawcalibrationcurve,Curve(extendedabs, spline(extendedabs))]

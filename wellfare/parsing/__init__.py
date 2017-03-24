@@ -7,7 +7,8 @@ __all__ = ["parse_tecan",
           "parse_label",
           "merge_wells_dicts",
           "date2seconds",
-          "parse_fusion"]
+          "parse_fusion",
+          "get_info"]
 
 from .tecan import (parse_tecan,
                     workbook2numpy,
@@ -17,6 +18,7 @@ from .tecan import (parse_tecan,
                     parse_labels,
                     parse_label,
                     merge_wells_dicts,
-                    date2seconds)
+                    date2seconds,
+                    get_info)
 
 from .fusion import parse_fusion

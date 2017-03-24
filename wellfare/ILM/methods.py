@@ -92,7 +92,6 @@ def make_L(Nu, Nic, eps_L=.001):
         L[i+1,i] = -1
     return L
 
-
 def GCV(y, H, alphas , Qv=None, optimize=False):
     """ Generalized Cross-Validation.
     
@@ -144,19 +143,20 @@ def GCV(y, H, alphas , Qv=None, optimize=False):
     Qy = Q.T.dot(y)
     
     alphas = [a for a in alphas if (-a) not in vv]
-    
+
+
     def Gy(alpha):
         return Q.dot( Qy.T / (vv + alpha))
-    
+
     def diag_G(alpha):
         v_prime = 1.0 / (vv + alpha)
         return (v_prime * Q2).sum(axis=-1)
-    
+
     def looe(alpha):
         """ Leave-one-out mean error for alpha """
         errs = Gy(alpha) / diag_G(alpha)
         return (errs**2).mean()
-    
+
     alphas_scores = [looe(a) for a in alphas]
     
     best_alpha = alphas[np.argmin(alphas_scores)]
@@ -167,7 +167,6 @@ def GCV(y, H, alphas , Qv=None, optimize=False):
     best_x = H.T.dot( Gy(best_alpha) )
 
     return best_alpha, best_x, alphas_scores
-
 
 
 def infer_control(H, y, Nic, alphas=None, eps_L=.0001, positive_solution=False,
@@ -230,7 +229,7 @@ def infer_control(H, y, Nic, alphas=None, eps_L=.0001, positive_solution=False,
         if not CVXOPT_FOUND:
             raise ValueError ("Install cvxopt for positive solutions. ")
         if hasattr(alphas, '__iter__'):
-            alpha, v, scores  = GCV(y, HiL, alphas, Qv = (Q,vv) )
+            alpha, v, scores  = GCV(y, HiL, alphas, Qv = (Q,vv))
         else:
             alpha, scores = alphas, None
 
@@ -244,11 +243,10 @@ def infer_control(H, y, Nic, alphas=None, eps_L=.0001, positive_solution=False,
         return uu, yyhat, ic, alpha, scores
     
     # Non-positive solutions
-
     def treat_y(y):
         """ GCV on one observation vector """
         if hasattr(alphas, '__iter__'):
-            alpha, v, scores  = GCV(y, HiL, alphas, Qv = (Q,vv) )
+            alpha, v, scores  = GCV(y, HiL, alphas, Qv = (Q,vv))
         else:
             alpha, v, scores = alphas, None, None 
         
