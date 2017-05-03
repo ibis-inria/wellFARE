@@ -8,6 +8,9 @@ __all__ = [
     "remove_bumps",
     "filter_outliers",
 
+    # from .io
+
+    "load_WI_JSON"
 
     # from .parsing
 
@@ -43,6 +46,8 @@ from .ILM import (infer_control,
                   infer_prot_conc_multistep)
 
 from .preprocessing import (remove_bumps, filter_outliers)
+
+from .io import (load_WI_JSON)
 
 from .parsing import (parse_tecan,
                       parse_fusion,
