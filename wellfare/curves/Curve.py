@@ -152,6 +152,25 @@ class Curve:
         of the time. """
         return self.interpolator(tt)
 
+    def __getitem__(self, ind):
+        """Return a ndarray or a Curve depending on the number of indices given.
+        Currently does not support boolean indexing.
+
+        Examples
+        --------
+        a = Curve(range(10), range(10))
+        a[1]
+        >>> array(1,1)
+        a[2:5]
+        >>> <__main__.Curve at 0x7f27f46cd358>
+        a[2:5].xy,
+        >>> array([[2, 2], [3, 3], [4, 4]])
+        """
+        try:
+            return Curve(self.x[ind], self.y[ind])
+        except (ValueError, TypeError):
+            return np.hstack([self.x[ind], self.y[ind]])
+
     # =================================================================
     # PROPERTIES OF THE CURVE
 
@@ -510,7 +529,7 @@ class Curve:
 
     def fit(self, f, **kwargs):
         """ Fits a function to the Curve with Scipy's curve_fit.
-            curve.fit(lambda x, c: c[0]*x + c[1])"""
+            curve.fit(lambda x, c1, c2: c1*x + c2)"""
         return curve_fit(f, self.x, self.y, **kwargs)
 
     @staticmethod
@@ -591,8 +610,18 @@ class Curve:
         self._update_interpolator()
 
     @outplace
-    def crop(self, xmin=None, xmax=None):
+    def crop(self, xmin=None, xmax=None, preserve_points=False):
         """ Removes all measurements taken before xmin or after xmax.
+
+        Parameters
+        ----------
+        xmin: float (default: None)
+        xmax: float (default: None)
+        preserve_points: bool (default: False)
+            When set to True, this parameter preserves the original data points
+            (it does not add xmin and xmax to the data values of the curve).
+            By default, xmin and xmax will be added as new data points.
+
         """
 
         xx = self.x
@@ -605,8 +634,13 @@ class Curve:
         x2 = xx[(xx >= xmin) & (xx <= xmax)]
         y2 = self(x2)
 
-        new_x = np.hstack([[xmin], x2, [xmax]])
-        new_y = np.hstack([[self(xmin)], y2, [self(xmax)]])
+        if preserve_points:
+            new_x = x2
+            new_y = y2
+        else:
+            new_x = np.hstack([[xmin], x2, [xmax]])
+            new_y = np.hstack([[self(xmin)], y2, [self(xmax)]])
+
         self.x = new_x
         self.y = new_y
 
@@ -619,7 +653,10 @@ class Curve:
         if keep_xspan:
             xmin, xmax = self.xlim()
             new_x = new_x[(new_x >= xmin) & (new_x <= xmax)]
-        return Curve(new_x, self(new_x))
+        return Curve(new_x, self(new_x),
+                     left_value=self.left_value,
+                     right_value=self.right_value,
+                     interpolation=self.interpolation)
 
     #=================================================================
     # OPERATIONS ON SEVERAL CURVES
