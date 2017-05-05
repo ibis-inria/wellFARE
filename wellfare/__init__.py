@@ -45,6 +45,9 @@ from .ILM import (infer_control,
                   infer_prot_conc_onestep,
                   infer_prot_conc_multistep)
 
+from .ILM import infer_synthesis_rate_onestep as infer_synthesis_rate
+from .ILM import infer_synthesis_rate_multistep as infer_promact
+
 from .preprocessing import (remove_bumps, filter_outliers)
 
 from .io import (load_WI_JSON)
