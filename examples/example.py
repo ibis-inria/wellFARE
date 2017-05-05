@@ -81,7 +81,6 @@ ax[1].set_xlabel('Time (min)')
 for ir, r in enumerate(rows):
     for ic, c in enumerate(cols):
         wellname = r + str(c)
-        print(wellname, colors[ic])
         wells[wellname]['Abs'].plot(
             ax=ax[0], marker='+', linewidth=1, linestyle='none', color='grey')
         wells[wellname]['Abs-corrected'].plot(
@@ -147,7 +146,6 @@ ax[1, 1].set_xlabel('Time (min)')
 for ir, r in enumerate(rows):
     for ic, c in enumerate(cols):
         wellname = r + str(c)
-        print(wellname, colors[ic])
         wells[wellname]['gr'].plot(
             ax=ax[0, 0], marker='+', linewidth=1, linestyle='none', color=colors[ic])
         wells[wellname]['prom-act'].plot(
