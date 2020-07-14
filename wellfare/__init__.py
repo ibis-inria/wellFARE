@@ -10,7 +10,7 @@ __all__ = [
 
     # from .io
 
-    "load_WI_JSON"
+    "load_WI_JSON",
 
     # from .parsing
 
